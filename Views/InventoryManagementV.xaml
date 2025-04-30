@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Amazon.ViewModels"
+             xmlns:models="clr-namespace:Amazon.Models"
+             x:Class="Amazon.Views.InventoryManagementView"
+             x:DataType="viewmodels:InventoryManagementVM"
+             Title="Inventory Management">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.Resources>
+            <ResourceDictionary>
+                <Style x:Key="EntryStyle" TargetType="Entry">
+                    <Setter Property="Margin" Value="10,5"/>
+                </Style>
+            </ResourceDictionary>
+        </Grid.Resources>
+
+        <!-- Product Input Section -->
+        <Grid Grid.Row="0" Padding="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <VerticalStackLayout Grid.Column="0">
+                <Entry Placeholder="Product Name" 
+                       Text="{Binding SelectedProduct.Name}"
+                       Style="{StaticResource EntryStyle}"/>
+
+                <Entry Placeholder="Description" 
+                       Text="{Binding SelectedProduct.Description}"
+                       Style="{StaticResource EntryStyle}"/>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Column="1">
+                <Entry Placeholder="Price" 
+                       Keyboard="Numeric"
+                       Text="{Binding SelectedProduct.Price}"
+                       Style="{StaticResource EntryStyle}"/>
+
+                <Entry Placeholder="Stock Quantity" 
+                       Keyboard="Numeric"
+                       Text="{Binding SelectedProduct.StockQuantity}"
+                       Style="{StaticResource EntryStyle}"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Product List -->
+        <CollectionView Grid.Row="1" 
+                        ItemsSource="{Binding Products}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedProduct}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Product">
+                    <Grid Padding="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <VerticalStackLayout Grid.Column="0">
+                            <Label Text="{Binding Name}" 
+                                   FontAttributes="Bold"/>
+                            <Label Text="{Binding Description}"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Grid.Column="1">
+                            <Label Text="{Binding Price, StringFormat='${0:F2}'}"
+                                   HorizontalOptions="End"/>
+                            <Label Text="{Binding StockQuantity, StringFormat='Stock: {0}'}"
+                                   HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+
+                        <Button Grid.Column="2"
+                                Text="Add to Cart"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:InventoryManagementVM}}, Path=AddToCartCommand}"
+                                CommandParameter="{Binding .}"
+                                BackgroundColor="Blue"
+                                TextColor="White"
+                                Margin="10,0,0,0"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Cart Summary -->
+        <VerticalStackLayout Grid.Row="2" Padding="10">
+            <Label Text="Shopping Cart" FontAttributes="Bold" FontSize="Large"/>
+            <CollectionView ItemsSource="{Binding Cart.Items}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:CartItem">
+                        <Grid Padding="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" Text="{Binding Product.Name}"/>
+                            <Label Grid.Column="1" Text="{Binding Quantity, StringFormat='x{0}'}"/>
+                            <Label Grid.Column="2" Text="{Binding Subtotal, StringFormat='${0:F2}'}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Label Text="{Binding Cart.Subtotal, StringFormat='Subtotal: ${0:F2}'}"
+                   FontAttributes="Bold"/>
+            <Label Text="{Binding Cart.Tax, StringFormat='Tax (7%): ${0:F2}'}"/>
+            <Label Text="{Binding Cart.Total, StringFormat='Total: ${0:F2}'}"
+                   FontAttributes="Bold"
+                   FontSize="Large"/>
+        </VerticalStackLayout>
+
+        <!-- Action Buttons -->
+        <HorizontalStackLayout Grid.Row="3" 
+                              HorizontalOptions="Center" 
+                              Spacing="10"
+                              Padding="0,10">
+            <Button Text="Add Product" 
+                    Command="{Binding AddProductCommand}"
+                    WidthRequest="120"/>
+
+            <Button Text="Update Product" 
+                    Command="{Binding UpdateProductCommand}"
+                    WidthRequest="120"/>
+
+            <Button Text="Delete Product" 
+                    Command="{Binding DeleteProductCommand}"
+                    WidthRequest="120"
+                    BackgroundColor="Red"
+                    TextColor="White"/>
+
+            <Button Text="Checkout" 
+                    Command="{Binding CheckoutCommand}"
+                    WidthRequest="120"
+                    BackgroundColor="Green"
+                    TextColor="White"/>
+        </HorizontalStackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Amazon.ViewModels"
+             xmlns:models="clr-namespace:Amazon.Models"
+             x:Class="Amazon.Views.ShoppingCartView"
+             x:DataType="viewmodels:InventoryManagementVM"
+             Title="Shopping Cart">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Cart Items -->
+        <CollectionView Grid.Row="0" 
+                        ItemsSource="{Binding Cart.Items}"
+                        SelectionMode="Single">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:CartItem">
+                    <Grid Padding="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <VerticalStackLayout Grid.Column="0">
+                            <Label Text="{Binding Product.Name}" 
+                                   FontAttributes="Bold"/>
+                            <Label Text="{Binding Product.Description}"/>
+                            <Label Text="{Binding Subtotal, StringFormat='Subtotal: ${0:F2}'}"/>
+                        </VerticalStackLayout>
+
+                        <Stepper Grid.Column="1" 
+                                Value="{Binding Quantity}"
+                                Minimum="1"
+                                Maximum="{Binding Product.StockQuantity}"
+                                HorizontalOptions="End"/>
+
+                        <Button Grid.Column="2"
+                                Text="Remove"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:InventoryManagementVM}}, Path=RemoveFromCartCommand}"
+                                CommandParameter="{Binding .}"
+                                BackgroundColor="Red"
+                                TextColor="White"
+                                Margin="10,0,0,0"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Cart Summary -->
+        <VerticalStackLayout Grid.Row="1" Padding="10">
+            <Label Text="{Binding Cart.Subtotal, StringFormat='Subtotal: ${0:F2}'}"
+                   FontAttributes="Bold"/>
+            <Label Text="{Binding Cart.Tax, StringFormat='Tax (7%): ${0:F2}'}"/>
+            <Label Text="{Binding Cart.Total, StringFormat='Total: ${0:F2}'}"
+                   FontAttributes="Bold"
+                   FontSize="Large"/>
+        </VerticalStackLayout>
+
+        <!-- Action Buttons -->
+        <HorizontalStackLayout Grid.Row="2" 
+                              HorizontalOptions="Center" 
+                              Spacing="10"
+                              Padding="0,10">
+            <Button Text="Checkout" 
+                    Command="{Binding CheckoutCommand}"
+                    WidthRequest="120"
+                    BackgroundColor="Green"
+                    TextColor="White"/>
+
+            <Button Text="Back to Inventory" 
+                    Command="{Binding GoToInventoryCommand}"
+                    WidthRequest="120"/>
+        </HorizontalStackLayout>
+    </Grid>
+</ContentPage> 

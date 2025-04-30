@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Amazon.MainPage">
+
+    <Grid RowSpacing="25" RowDefinitions="Auto,*"
+          Padding="20">
+        
+        <Label 
+            Text="Amazon Store Management"
+            Grid.Row="0"
+            SemanticProperties.HeadingLevel="Level1"
+            FontSize="32"
+            HorizontalOptions="Center" />
+
+        <VerticalStackLayout
+            Grid.Row="1"
+            Spacing="25"
+            Padding="30,0"
+            VerticalOptions="Center">
+
+            <Button
+                x:Name="InventoryButton"
+                Text="Inventory Management"
+                SemanticProperties.Hint="Navigate to inventory management"
+                Clicked="OnInventoryClicked"
+                HorizontalOptions="Center"
+                BackgroundColor="DodgerBlue"
+                TextColor="White"
+                FontSize="20"
+                WidthRequest="300"
+                HeightRequest="75"/>
+
+            <Button
+                x:Name="ShopButton"
+                Text="Shop"
+                SemanticProperties.Hint="Navigate to shop"
+                Clicked="OnShopClicked"
+                HorizontalOptions="Center"
+                BackgroundColor="ForestGreen"
+                TextColor="White"
+                FontSize="20"
+                WidthRequest="300"
+                HeightRequest="75"/>
+
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>
