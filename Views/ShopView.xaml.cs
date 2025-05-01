@@ -4,10 +4,10 @@ namespace Amazon.Views
 {
     public partial class ShopView : ContentPage
     {
-        public ShopView()
+        public ShopView(ShopViewModel viewModel)
         {
             InitializeComponent();
-            BindingContext = new ShopViewModel();
+            BindingContext = viewModel;
         }
     }
 } 

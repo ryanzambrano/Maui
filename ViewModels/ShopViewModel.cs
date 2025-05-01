@@ -41,12 +41,13 @@ namespace Amazon.ViewModels
             {
                 _cart = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(Cart.Count));
             }
         }
 
         public ICommand AddToCartCommand => new Command<Product?>(AddToCart);
         public ICommand CheckoutCommand => new Command(Checkout);
-        public ICommand GoToInventoryCommand => new Command(GoToInventory);
+        public ICommand GoToMainCommand => new Command(GoToMain);
 
         private async void LoadProducts()
         {
@@ -78,6 +79,7 @@ namespace Amazon.ViewModels
             
             // Force UI update
             OnPropertyChanged(nameof(Cart));
+            OnPropertyChanged(nameof(Cart.Count));
         }
 
         private void Checkout()
@@ -100,11 +102,12 @@ namespace Amazon.ViewModels
 
             Cart.Clear();
             OnPropertyChanged(nameof(Cart));
+            OnPropertyChanged(nameof(Cart.Count));
         }
 
-        private async void GoToInventory()
+        private async void GoToMain()
         {
-            await Shell.Current.GoToAsync(nameof(InventoryManagementView));
+            await Shell.Current.GoToAsync("//MainPage");
         }
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

@@ -1,14 +1,13 @@
-﻿using Amazon.ViewModels;
-using Amazon.Services;
+using Amazon.ViewModels;
 
 namespace Amazon.Views
 {
     public partial class InventoryManagementView : ContentPage
     {
-        public InventoryManagementView()
+        public InventoryManagementView(InventoryManagementVM viewModel)
         {
             InitializeComponent();
-            BindingContext = new InventoryManagementVM();
+            BindingContext = viewModel;
         }
     }
-}
+} 

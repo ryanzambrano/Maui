@@ -6,9 +6,10 @@
              xmlns:converters="clr-namespace:Amazon.Converters"
              x:Class="Amazon.Views.ShopView"
              x:DataType="viewmodels:ShopViewModel"
-             Title="Shop">
+             Title="Shop"
+             NavigationPage.HasBackButton="True">
 
-    <Grid RowDefinitions="*, Auto">
+    <Grid RowDefinitions="Auto, *, Auto">
         <Grid.Resources>
             <ResourceDictionary>
                 <converters:CartSubtotalConverter x:Key="CartSubtotalConverter"/>
@@ -18,8 +19,17 @@
             </ResourceDictionary>
         </Grid.Resources>
 
+        <!-- Back Button -->
+        <Button Grid.Row="0"
+                Text="Back"
+                Command="{Binding GoToMainCommand}"
+                HorizontalOptions="Start"
+                Margin="10"
+                BackgroundColor="Gray"
+                TextColor="White"/>
+
         <!-- Product List -->
-        <CollectionView Grid.Row="0"
+        <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Products}"
                         SelectionMode="None">
             <CollectionView.ItemTemplate>
@@ -53,7 +63,7 @@
         </CollectionView>
 
         <!-- Cart Summary -->
-        <Grid Grid.Row="1" 
+        <Grid Grid.Row="2" 
               Padding="20"
               ColumnDefinitions="*, Auto"
               BackgroundColor="#F5F5F5">

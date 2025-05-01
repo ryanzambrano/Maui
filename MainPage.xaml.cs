@@ -14,12 +14,12 @@ namespace Amazon
 
         private async void OnInventoryClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("InventoryManagementView");
+            await Shell.Current.GoToAsync("//InventoryManagementView");
         }
 
         private async void OnShopClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("ShopView");
+            await Shell.Current.GoToAsync("//ShopView");
         }
     }
 }

@@ -63,6 +63,7 @@ namespace Amazon.ViewModels
         public ICommand AddProductCommand => new Command(AddProduct);
         public ICommand UpdateProductCommand => new Command(UpdateProduct);
         public ICommand DeleteProductCommand => new Command(DeleteProduct);
+        public ICommand GoToMainCommand => new Command(GoToMain);
         public ICommand GoToShopCommand => new Command(GoToShop);
         public ICommand AddToCartCommand => new Command<Product?>(AddToCart);
         public ICommand RemoveFromCartCommand => new Command<CartItem?>(RemoveFromCart);
@@ -113,12 +114,9 @@ namespace Amazon.ViewModels
             }
         }
 
-        private void GoToShop()
+        private async void GoToShop()
         {
-            if (Application.Current?.Windows[0]?.Page is MainPage mainPage)
-            {
-                mainPage.Navigation.PushAsync(new ShopView());
-            }
+            await Shell.Current.GoToAsync("//ShopView");
         }
 
         private void AddToCart(Product? product)
@@ -162,9 +160,14 @@ namespace Amazon.ViewModels
             Cart.Clear();
         }
 
+        private async void GoToMain()
+        {
+            await Shell.Current.GoToAsync("//MainPage");
+        }
+
         private async void GoToInventory()
         {
-            await Shell.Current.GoToAsync(nameof(InventoryManagementView));
+            await Shell.Current.GoToAsync("//InventoryManagementView");
         }
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

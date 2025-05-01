@@ -16,9 +16,12 @@ namespace Amazon.Models
             get => _product;
             set
             {
-                _product = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(Subtotal));
+                if (_product != value)
+                {
+                    _product = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Subtotal));
+                }
             }
         }
 
@@ -27,9 +30,12 @@ namespace Amazon.Models
             get => _quantity;
             set
             {
-                _quantity = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(Subtotal));
+                if (_quantity != value)
+                {
+                    _quantity = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Subtotal));
+                }
             }
         }
 
