@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:Amazon.ViewModels"
              xmlns:models="clr-namespace:Amazon.Models"
+             xmlns:converters="clr-namespace:Amazon.Converters"
              x:Class="Amazon.Views.ShoppingCartView"
              x:DataType="viewmodels:InventoryManagementVM"
              Title="Shopping Cart">
@@ -14,9 +15,17 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <Grid.Resources>
+            <ResourceDictionary>
+                <converters:CartSubtotalConverter x:Key="CartSubtotalConverter"/>
+                <converters:CartTaxConverter x:Key="CartTaxConverter"/>
+                <converters:CartTotalConverter x:Key="CartTotalConverter"/>
+            </ResourceDictionary>
+        </Grid.Resources>
+
         <!-- Cart Items -->
         <CollectionView Grid.Row="0" 
-                        ItemsSource="{Binding Cart.Items}"
+                        ItemsSource="{Binding Cart}"
                         SelectionMode="Single">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:CartItem">
@@ -54,10 +63,10 @@
 
         <!-- Cart Summary -->
         <VerticalStackLayout Grid.Row="1" Padding="10">
-            <Label Text="{Binding Cart.Subtotal, StringFormat='Subtotal: ${0:F2}'}"
+            <Label Text="{Binding Cart, StringFormat='Subtotal: ${0:F2}', Converter={StaticResource CartSubtotalConverter}}"
                    FontAttributes="Bold"/>
-            <Label Text="{Binding Cart.Tax, StringFormat='Tax (7%): ${0:F2}'}"/>
-            <Label Text="{Binding Cart.Total, StringFormat='Total: ${0:F2}'}"
+            <Label Text="{Binding Cart, StringFormat='Tax (7%): ${0:F2}', Converter={StaticResource CartTaxConverter}}"/>
+            <Label Text="{Binding Cart, StringFormat='Total: ${0:F2}', Converter={StaticResource CartTotalConverter}}"
                    FontAttributes="Bold"
                    FontSize="Large"/>
         </VerticalStackLayout>

@@ -3,11 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:Amazon.ViewModels"
              xmlns:models="clr-namespace:Amazon.Models"
+             xmlns:converters="clr-namespace:Amazon.Converters"
              x:Class="Amazon.Views.ShopView"
              x:DataType="viewmodels:ShopViewModel"
              Title="Shop">
 
     <Grid RowDefinitions="*, Auto">
+        <Grid.Resources>
+            <ResourceDictionary>
+                <converters:CartSubtotalConverter x:Key="CartSubtotalConverter"/>
+                <converters:CartTaxConverter x:Key="CartTaxConverter"/>
+                <converters:CartTotalConverter x:Key="CartTotalConverter"/>
+            </ResourceDictionary>
+        </Grid.Resources>
+
         <!-- Product List -->
         <CollectionView Grid.Row="0"
                         ItemsSource="{Binding Products}"
@@ -49,10 +58,10 @@
               BackgroundColor="WhiteSmoke">
             
             <VerticalStackLayout Grid.Column="0" Spacing="5">
-                <Label Text="{Binding Cart.Subtotal, StringFormat='Subtotal: ${0:F2}'}"
+                <Label Text="{Binding Cart, StringFormat='Subtotal: ${0:F2}', Converter={StaticResource CartSubtotalConverter}}"
                        FontAttributes="Bold"/>
-                <Label Text="{Binding Cart.Tax, StringFormat='Tax (7%): ${0:F2}'}"/>
-                <Label Text="{Binding Cart.Total, StringFormat='Total: ${0:F2}'}"
+                <Label Text="{Binding Cart, StringFormat='Tax (7%): ${0:F2}', Converter={StaticResource CartTaxConverter}}"/>
+                <Label Text="{Binding Cart, StringFormat='Total: ${0:F2}', Converter={StaticResource CartTotalConverter}}"
                        FontAttributes="Bold"
                        FontSize="Large"/>
             </VerticalStackLayout>
@@ -60,7 +69,7 @@
             <Button Grid.Column="1"
                     Text="Checkout"
                     Command="{Binding CheckoutCommand}"
-                    IsEnabled="{Binding Cart.Items.Count, Converter={StaticResource GreaterThanZeroConverter}}"
+                    IsEnabled="{Binding Cart.Count, Converter={StaticResource GreaterThanZeroConverter}}"
                     BackgroundColor="ForestGreen"
                     TextColor="White"
                     VerticalOptions="Center"/>

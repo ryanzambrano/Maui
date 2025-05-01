@@ -4,98 +4,105 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Amazon.Models;
 using Amazon.Services;
+using Amazon.Views;
 
 namespace Amazon.ViewModels
 {
     public class ShopViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<Product> _products;
-        private ShoppingCart _cart;
+        private ObservableCollection<CartItem> _cart;
+        private readonly ProductServiceProxy _productService;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public ShopViewModel()
+        {
+            _products = new ObservableCollection<Product>();
+            _cart = new ObservableCollection<CartItem>();
+            _productService = new ProductServiceProxy();
+            LoadProducts();
+        }
 
         public ObservableCollection<Product> Products
         {
             get => _products;
-            private set
+            set
             {
                 _products = value;
                 OnPropertyChanged();
             }
         }
 
-        public ShoppingCart Cart
+        public ObservableCollection<CartItem> Cart
         {
             get => _cart;
-            private set
+            set
             {
                 _cart = value;
                 OnPropertyChanged();
             }
         }
 
-        public ICommand AddToCartCommand { get; }
-        public ICommand CheckoutCommand { get; }
+        public ICommand AddToCartCommand => new Command<Product?>(AddToCart);
+        public ICommand CheckoutCommand => new Command(Checkout);
+        public ICommand GoToInventoryCommand => new Command(GoToInventory);
 
-        public ShopViewModel()
+        private async void LoadProducts()
         {
-            // Initialize products from service
-            Products = new ObservableCollection<Product>(ProductServiceProxy.Current.Products);
-            Cart = new ShoppingCart();
-
-            // Initialize commands
-            AddToCartCommand = new Command<Product>(AddToCart);
-            CheckoutCommand = new Command(Checkout);
+            var products = await _productService.GetAllProductsAsync();
+            Products.Clear();
+            foreach (var product in products)
+            {
+                Products.Add(product);
+            }
         }
 
-        private void AddToCart(Product product)
+        private void AddToCart(Product? product)
         {
             if (product == null || product.StockQuantity <= 0) return;
 
-            var existingItem = Cart.Items.FirstOrDefault(item => item.Product.Id == product.Id);
+            var existingItem = Cart.FirstOrDefault(item => item.Product.Id == product.Id);
             if (existingItem != null)
             {
                 if (existingItem.Quantity < product.StockQuantity)
                 {
                     existingItem.Quantity++;
-                    product.StockQuantity--;
                 }
             }
             else
             {
-                Cart.Items.Add(new CartItem { Product = product, Quantity = 1 });
-                product.StockQuantity--;
+                Cart.Add(new CartItem { Product = product, Quantity = 1 });
             }
         }
 
-        private async void Checkout()
+        private void Checkout()
         {
-            if (Cart.Items.Count == 0) return;
+            if (Cart.Count == 0) return;
 
-            // Create receipt
             var receipt = $"Receipt\n\n";
-            foreach (var item in Cart.Items)
+            foreach (var item in Cart)
             {
                 receipt += $"{item.Product.Name} x {item.Quantity} @ ${item.Product.Price:F2} = ${item.Subtotal:F2}\n";
             }
-            receipt += $"\nSubtotal: ${Cart.Subtotal:F2}\n";
-            receipt += $"Tax (7%): ${Cart.Tax:F2}\n";
-            receipt += $"Total: ${Cart.Total:F2}";
+            receipt += $"\nSubtotal: ${Cart.Sum(item => item.Subtotal):F2}\n";
+            receipt += $"Tax (7%): ${Cart.Sum(item => item.Subtotal) * 0.07m:F2}\n";
+            receipt += $"Total: ${Cart.Sum(item => item.Subtotal) * 1.07m:F2}";
 
-            // Show receipt
-            await Application.Current.MainPage.DisplayAlert("Thank you for your purchase!", receipt, "OK");
-
-            // Update inventory in service
-            foreach (var item in Cart.Items)
+            if (Application.Current?.Windows[0]?.Page is MainPage mainPage)
             {
-                await ProductServiceProxy.Current.UpdateProductAsync(item.Product);
+                mainPage.DisplayAlert("Receipt", receipt, "OK");
             }
 
-            // Clear cart
-            Cart.Items.Clear();
+            Cart.Clear();
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        private async void GoToInventory()
+        {
+            await Shell.Current.GoToAsync(nameof(InventoryManagementView));
+        }
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

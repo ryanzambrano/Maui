@@ -9,7 +9,7 @@ namespace Amazon.Services
     public interface IProductService
     {
         Task<List<Product>> GetAllProductsAsync();
-        Task<Product> GetProductByIdAsync(int id);
+        Task<Product?> GetProductByIdAsync(int id);
         Task<List<Product>> GetProductsByCategoryAsync(string category);
         Task AddProductAsync(Product product);
         Task UpdateProductAsync(Product product);
@@ -17,92 +17,127 @@ namespace Amazon.Services
         List<Product> Products { get; }
     }
 
-    internal class ProductServiceProxy : IProductService
+    public class ProductServiceProxy : IProductService
     {
-        // Static property for easy access
-        public static ProductServiceProxy Current { get; } = new ProductServiceProxy();
-
-        // Implement the Products property from the interface
-        public List<Product> Products { get; private set; }
-
-        public ProductServiceProxy()
+        private static readonly List<Product> _products = new()
         {
-            // Initialize with some sample data
-            Products = new List<Product>
+            new Product
             {
-                new Product
-                {
-                    Id = 1,
-                    Name = "Kindle Paperwhite",
-                    Description = "E-reader with high-resolution display",
-                    Price = 139.99m,
-                    Category = "Electronics",
-                    ImageUrl = "/images/kindle.jpg",
-                    StockQuantity = 50,
-                    CreatedAt = DateTime.Now
-                },
-                new Product
-                {
-                    Id = 2,
-                    Name = "Echo Dot",
-                    Description = "Smart speaker with Alexa",
-                    Price = 49.99m,
-                    Category = "Electronics",
-                    ImageUrl = "/images/echo-dot.jpg",
-                    StockQuantity = 100,
-                    CreatedAt = DateTime.Now
-                }
-            };
+                Id = 1,
+                Name = "Laptop",
+                Description = "High-performance laptop",
+                Price = 999.99m,
+                StockQuantity = 10,
+                Category = "Electronics",
+                ImageUrl = "https://example.com/laptop.jpg"
+            },
+            new Product
+            {
+                Id = 2,
+                Name = "Smartphone",
+                Description = "Latest smartphone model",
+                Price = 699.99m,
+                StockQuantity = 15,
+                Category = "Electronics",
+                ImageUrl = "https://example.com/phone.jpg"
+            },
+            new Product
+            {
+                Id = 3,
+                Name = "Headphones",
+                Description = "Wireless noise-cancelling headphones",
+                Price = 199.99m,
+                StockQuantity = 20,
+                Category = "Electronics",
+                ImageUrl = "https://example.com/headphones.jpg"
+            }
+        };
+
+        public IEnumerable<Product> GetAllProducts()
+        {
+            return _products;
+        }
+
+        public void AddProduct(Product product)
+        {
+            product.Id = _products.Count > 0 ? _products.Max(p => p.Id) + 1 : 1;
+            _products.Add(product);
+        }
+
+        public void UpdateProduct(Product product)
+        {
+            var existingProduct = _products.FirstOrDefault(p => p.Id == product.Id);
+            if (existingProduct != null)
+            {
+                existingProduct.Name = product.Name;
+                existingProduct.Description = product.Description;
+                existingProduct.Price = product.Price;
+                existingProduct.StockQuantity = product.StockQuantity;
+                existingProduct.Category = product.Category;
+                existingProduct.ImageUrl = product.ImageUrl;
+            }
+        }
+
+        public void DeleteProduct(int id)
+        {
+            var product = _products.FirstOrDefault(p => p.Id == id);
+            if (product != null)
+            {
+                _products.Remove(product);
+            }
         }
 
         public async Task<List<Product>> GetAllProductsAsync()
         {
             await Task.Delay(100);
-            return Products.ToList();
+            return _products.ToList();
         }
 
-        public async Task<Product> GetProductByIdAsync(int id)
+        public async Task<Product?> GetProductByIdAsync(int id)
         {
             await Task.Delay(50);
-            return Products.FirstOrDefault(p => p.Id == id);
+            return _products.FirstOrDefault(p => p.Id == id);
         }
 
         public async Task<List<Product>> GetProductsByCategoryAsync(string category)
         {
             await Task.Delay(100);
-            return Products.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+            return _products.Where(p => p.Category.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         public async Task AddProductAsync(Product product)
         {
             await Task.Delay(50);
-            // Ensure the product has a unique ID
-            product.Id = Products.Any() ? Products.Max(p => p.Id) + 1 : 1;
+            product.Id = _products.Count > 0 ? _products.Max(p => p.Id) + 1 : 1;
             product.CreatedAt = DateTime.Now;
-            Products.Add(product);
+            _products.Add(product);
         }
 
         public async Task UpdateProductAsync(Product product)
         {
             await Task.Delay(50);
-            var existingProduct = Products.FirstOrDefault(p => p.Id == product.Id);
+            var existingProduct = _products.FirstOrDefault(p => p.Id == product.Id);
             if (existingProduct != null)
             {
-                // Remove the existing product
-                Products.Remove(existingProduct);
-                // Add the updated product
-                Products.Add(product);
+                existingProduct.Name = product.Name;
+                existingProduct.Description = product.Description;
+                existingProduct.Price = product.Price;
+                existingProduct.StockQuantity = product.StockQuantity;
+                existingProduct.Category = product.Category;
+                existingProduct.ImageUrl = product.ImageUrl;
             }
         }
 
         public async Task DeleteProductAsync(int id)
         {
             await Task.Delay(50);
-            var productToRemove = Products.FirstOrDefault(p => p.Id == id);
+            var productToRemove = _products.FirstOrDefault(p => p.Id == id);
             if (productToRemove != null)
             {
-                Products.Remove(productToRemove);
+                _products.Remove(productToRemove);
             }
         }
+
+        public List<Product> Products => _products;
     }
 }

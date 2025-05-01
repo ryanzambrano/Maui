@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:Amazon.ViewModels"
              xmlns:models="clr-namespace:Amazon.Models"
+             xmlns:converters="clr-namespace:Amazon.Converters"
              x:Class="Amazon.Views.InventoryManagementView"
              x:DataType="viewmodels:InventoryManagementVM"
              Title="Inventory Management">
@@ -20,6 +21,9 @@
                 <Style x:Key="EntryStyle" TargetType="Entry">
                     <Setter Property="Margin" Value="10,5"/>
                 </Style>
+                <converters:CartSubtotalConverter x:Key="CartSubtotalConverter"/>
+                <converters:CartTaxConverter x:Key="CartTaxConverter"/>
+                <converters:CartTotalConverter x:Key="CartTotalConverter"/>
             </ResourceDictionary>
         </Grid.Resources>
 
@@ -95,7 +99,7 @@
         <!-- Cart Summary -->
         <VerticalStackLayout Grid.Row="2" Padding="10">
             <Label Text="Shopping Cart" FontAttributes="Bold" FontSize="Large"/>
-            <CollectionView ItemsSource="{Binding Cart.Items}">
+            <CollectionView ItemsSource="{Binding Cart}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:CartItem">
                         <Grid Padding="5">
@@ -103,19 +107,27 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
                             <Label Grid.Column="0" Text="{Binding Product.Name}"/>
                             <Label Grid.Column="1" Text="{Binding Quantity, StringFormat='x{0}'}"/>
                             <Label Grid.Column="2" Text="{Binding Subtotal, StringFormat='${0:F2}'}"/>
+                            <Button Grid.Column="3"
+                                    Text="Remove"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:InventoryManagementVM}}, Path=RemoveFromCartCommand}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="Red"
+                                    TextColor="White"
+                                    Margin="10,0,0,0"/>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-            <Label Text="{Binding Cart.Subtotal, StringFormat='Subtotal: ${0:F2}'}"
+            <Label Text="{Binding Cart, StringFormat='Subtotal: ${0:F2}', Converter={StaticResource CartSubtotalConverter}}"
                    FontAttributes="Bold"/>
-            <Label Text="{Binding Cart.Tax, StringFormat='Tax (7%): ${0:F2}'}"/>
-            <Label Text="{Binding Cart.Total, StringFormat='Total: ${0:F2}'}"
+            <Label Text="{Binding Cart, StringFormat='Tax (7%): ${0:F2}', Converter={StaticResource CartTaxConverter}}"/>
+            <Label Text="{Binding Cart, StringFormat='Total: ${0:F2}', Converter={StaticResource CartTotalConverter}}"
                    FontAttributes="Bold"
                    FontSize="Large"/>
         </VerticalStackLayout>
