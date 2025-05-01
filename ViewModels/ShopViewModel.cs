@@ -72,8 +72,12 @@ namespace Amazon.ViewModels
             }
             else
             {
-                Cart.Add(new CartItem { Product = product, Quantity = 1 });
+                var newItem = new CartItem { Product = product, Quantity = 1 };
+                Cart.Add(newItem);
             }
+            
+            // Force UI update
+            OnPropertyChanged(nameof(Cart));
         }
 
         private void Checkout()
@@ -95,6 +99,7 @@ namespace Amazon.ViewModels
             }
 
             Cart.Clear();
+            OnPropertyChanged(nameof(Cart));
         }
 
         private async void GoToInventory()
