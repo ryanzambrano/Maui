@@ -2,6 +2,7 @@
 using Amazon.Services;
 using Amazon.ViewModels;
 using Amazon.Views;
+using System.Diagnostics;
 
 namespace Amazon
 {
@@ -9,6 +10,7 @@ namespace Amazon
     {
         public static MauiApp CreateMauiApp()
         {
+            Debug.WriteLine("[MauiProgram] CreateMauiApp started.");
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
@@ -31,9 +33,13 @@ namespace Amazon
 
 #if DEBUG
     		builder.Logging.AddDebug();
+            Debug.WriteLine("[MauiProgram] DEBUG mode detected.");
 #endif
 
-            return builder.Build();
+            Debug.WriteLine("[MauiProgram] Building MauiApp...");
+            var app = builder.Build();
+            Debug.WriteLine("[MauiProgram] MauiApp built.");
+            return app;
         }
     }
 }

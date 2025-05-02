@@ -1,4 +1,5 @@
 using Amazon.ViewModels;
+using System.Diagnostics;
 
 namespace Amazon.Views
 {
@@ -8,6 +9,7 @@ namespace Amazon.Views
         {
             InitializeComponent();
             BindingContext = viewModel;
+            Debug.WriteLine($"[ShopView] Constructor - ViewModel Instance HashCode: {viewModel?.GetHashCode()}");
         }
     }
 } 

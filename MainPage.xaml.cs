@@ -1,6 +1,7 @@
 ﻿using Amazon.Views;
 using Amazon.ViewModels;
 using Microsoft.Maui.Controls;
+using System.Diagnostics;
 
 namespace Amazon
 {
@@ -8,17 +9,21 @@ namespace Amazon
     {
         public MainPage()
         {
+            Debug.WriteLine("[MainPage] Constructor started.");
             InitializeComponent();
             BindingContext = new MainVM(); // Set the BindingContext to the current page
+            Debug.WriteLine("[MainPage] Constructor finished.");
         }
 
         private async void OnInventoryClicked(object sender, EventArgs e)
         {
+            Debug.WriteLine("[MainPage] OnInventoryClicked.");
             await Shell.Current.GoToAsync("//InventoryManagementView");
         }
 
         private async void OnShopClicked(object sender, EventArgs e)
         {
+            Debug.WriteLine("[MainPage] OnShopClicked.");
             await Shell.Current.GoToAsync("//ShopView");
         }
     }

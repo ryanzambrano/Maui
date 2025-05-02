@@ -51,7 +51,7 @@
 
                         <Button Grid.Column="1"
                                 Text="Add to Cart"
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ShopViewModel}}, Path=AddToCartCommand}"
+                                Command="{Binding BindingContext.AddToCartCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
                                 CommandParameter="{Binding .}"
                                 IsEnabled="{Binding StockQuantity, Converter={StaticResource GreaterThanZeroConverter}}"
                                 BackgroundColor="ForestGreen"
@@ -101,12 +101,12 @@
 
                 <BoxView HeightRequest="1" Color="Gray" Margin="0,5"/>
                 
-                <Label Text="{Binding Cart, StringFormat='Subtotal: ${0:F2}', Converter={StaticResource CartSubtotalConverter}}"
+                <Label Text="{Binding CartSubtotal, StringFormat='Subtotal: ${0:F2}'}"
                        FontAttributes="Bold"
                        TextColor="Black"/>
-                <Label Text="{Binding Cart, StringFormat='Tax (7%): ${0:F2}', Converter={StaticResource CartTaxConverter}}"
+                <Label Text="{Binding CartTax, StringFormat='Tax (7%): ${0:F2}'}"
                        TextColor="Black"/>
-                <Label Text="{Binding Cart, StringFormat='Total: ${0:F2}', Converter={StaticResource CartTotalConverter}}"
+                <Label Text="{Binding CartTotal, StringFormat='Total: ${0:F2}'}"
                        FontAttributes="Bold"
                        FontSize="Large"
                        TextColor="Black"/>

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Amazon.Models;
@@ -18,6 +19,7 @@ namespace Amazon.ViewModels
 
         public ShopViewModel()
         {
+            Debug.WriteLine($"[ShopViewModel] Constructor - Instance HashCode: {this.GetHashCode()}");
             _products = new ObservableCollection<Product>();
             _cart = new ObservableCollection<CartItem>();
             _productService = new ProductServiceProxy();
@@ -61,6 +63,7 @@ namespace Amazon.ViewModels
 
         private void AddToCart(Product? product)
         {
+            Debug.WriteLine($"[ShopViewModel] AddToCart called - Instance HashCode: {this.GetHashCode()}, Product: {product?.Name}");
             if (product == null || product.StockQuantity <= 0) return;
 
             var existingItem = Cart.FirstOrDefault(item => item.Product.Id == product.Id);
@@ -78,8 +81,14 @@ namespace Amazon.ViewModels
             }
             
             // Force UI update
+            Debug.WriteLine($"[ShopViewModel] Cart Count Before Notify: {Cart.Count}");
             OnPropertyChanged(nameof(Cart));
             OnPropertyChanged(nameof(Cart.Count));
+            // Explicitly notify calculated properties
+            OnPropertyChanged(nameof(CartSubtotal));
+            OnPropertyChanged(nameof(CartTax));
+            OnPropertyChanged(nameof(CartTotal));
+            Debug.WriteLine($"[ShopViewModel] PropertyChanged notifications sent for Cart.");
         }
 
         private void Checkout()
@@ -91,9 +100,9 @@ namespace Amazon.ViewModels
             {
                 receipt += $"{item.Product.Name} x {item.Quantity} @ ${item.Product.Price:F2} = ${item.Subtotal:F2}\n";
             }
-            receipt += $"\nSubtotal: ${Cart.Sum(item => item.Subtotal):F2}\n";
-            receipt += $"Tax (7%): ${Cart.Sum(item => item.Subtotal) * 0.07m:F2}\n";
-            receipt += $"Total: ${Cart.Sum(item => item.Subtotal) * 1.07m:F2}";
+            receipt += $"\nSubtotal: ${CartSubtotal:F2}\n";
+            receipt += $"Tax (7%): ${CartTax:F2}\n";
+            receipt += $"Total: ${CartTotal:F2}";
 
             if (Application.Current?.Windows[0]?.Page is MainPage mainPage)
             {
@@ -103,12 +112,21 @@ namespace Amazon.ViewModels
             Cart.Clear();
             OnPropertyChanged(nameof(Cart));
             OnPropertyChanged(nameof(Cart.Count));
+            // Explicitly notify calculated properties
+            OnPropertyChanged(nameof(CartSubtotal));
+            OnPropertyChanged(nameof(CartTax));
+            OnPropertyChanged(nameof(CartTotal));
         }
 
         private async void GoToMain()
         {
             await Shell.Current.GoToAsync("//MainPage");
         }
+
+        // Add calculated properties for binding
+        public decimal CartSubtotal => Cart.Sum(item => item.Subtotal);
+        public decimal CartTax => CartSubtotal * 0.07m;
+        public decimal CartTotal => CartSubtotal + CartTax;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {

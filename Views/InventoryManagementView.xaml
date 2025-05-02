@@ -101,15 +101,15 @@
                               Padding="0,10">
             <Button Text="Add Product" 
                     Command="{Binding AddProductCommand}"
-                    WidthRequest="120"/>
+                    WidthRequest="140"/>
 
             <Button Text="Update Product" 
                     Command="{Binding UpdateProductCommand}"
-                    WidthRequest="120"/>
+                    WidthRequest="140"/>
 
             <Button Text="Delete Product" 
                     Command="{Binding DeleteProductCommand}"
-                    WidthRequest="120"
+                    WidthRequest="140"
                     BackgroundColor="Red"
                     TextColor="White"/>
         </HorizontalStackLayout>
