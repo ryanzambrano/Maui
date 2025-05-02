@@ -59,4 +59,40 @@ namespace Amazon.Converters
             return 0.07m; // Default to 7%
         }
     }
+
+    public class CartTabColorConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is string cartName)
+            {
+                // The main cart has a special color
+                return cartName == "Shopping Cart" ? "#0056B3" : "#6c757d";
+            }
+            return "#6c757d"; // Default to gray
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class NotMainCartConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is string cartName)
+            {
+                // Return true if this is NOT the main cart (so delete button is visible)
+                return cartName != "Shopping Cart";
+            }
+            return true; // Default to visible
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 } 

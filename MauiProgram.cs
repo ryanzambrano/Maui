@@ -31,6 +31,7 @@ namespace Amazon
             // Register Views
             builder.Services.AddTransient<ShopView>();
             builder.Services.AddTransient<InventoryManagementView>();
+            builder.Services.AddTransient<ShoppingCartView>();
             builder.Services.AddTransient<ConfigView>();
 
 #if DEBUG

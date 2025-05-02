@@ -5,11 +5,12 @@
              xmlns:models="clr-namespace:Amazon.Models"
              xmlns:converters="clr-namespace:Amazon.Converters"
              x:Class="Amazon.Views.ShoppingCartView"
-             x:DataType="viewmodels:InventoryManagementVM"
+             x:DataType="viewmodels:ShopViewModel"
              Title="Shopping Cart">
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -20,13 +21,86 @@
                 <converters:CartSubtotalConverter x:Key="CartSubtotalConverter"/>
                 <converters:CartTaxConverter x:Key="CartTaxConverter"/>
                 <converters:CartTotalConverter x:Key="CartTotalConverter"/>
+                <converters:CartTabColorConverter x:Key="CartTabColorConverter"/>
+                <converters:NotMainCartConverter x:Key="NotMainCartConverter"/>
             </ResourceDictionary>
         </Grid.Resources>
 
+        <!-- Cart/Wishlist Tabs -->
+        <Grid Grid.Row="0" Padding="5,2" BackgroundColor="#e8e8e8" HeightRequest="40">
+            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="5" x:Name="CartTabsContainer">
+                    <!-- Dynamic tabs for carts/wishlists - Simplified without converters -->
+                    <CollectionView ItemsSource="{Binding ShoppingCarts}" 
+                                  HorizontalOptions="Start"
+                                  SelectionMode="None"
+                                  HeightRequest="30">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Horizontal" ItemSpacing="5"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:ShoppingCart">
+                                <Border StrokeShape="RoundRectangle 5,5,5,5" 
+                                        Padding="8,0"
+                                        BackgroundColor="#0056B3"
+                                        HeightRequest="30"
+                                        VerticalOptions="Center">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                            CommandParameter="{Binding .}"
+                                            Tapped="OnCartTabTapped"/>
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                                        <Label Grid.Column="0" 
+                                              Text="{Binding Name}" 
+                                              TextColor="White" 
+                                              FontSize="12"
+                                              VerticalOptions="Center"/>
+                                        <Button Grid.Column="1" 
+                                               Text="×" 
+                                               FontSize="10" 
+                                               WidthRequest="18" 
+                                               HeightRequest="18"
+                                               Padding="0"
+                                               Margin="3,0,0,0"
+                                               BackgroundColor="#dc3545"
+                                               TextColor="White"
+                                               CommandParameter="{Binding .}"
+                                               Clicked="OnDeleteCartClicked"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    
+                    <!-- Add new cart/wishlist button -->
+                    <Button Text="+"
+                            WidthRequest="30"
+                            HeightRequest="30"
+                            Padding="0"
+                            Margin="5,0,0,0"
+                            BackgroundColor="#28a745"
+                            TextColor="White"
+                            CornerRadius="15"
+                            VerticalOptions="Center"
+                            Clicked="OnAddNewCartClicked"/>
+                </HorizontalStackLayout>
+            </ScrollView>
+        </Grid>
+
+        <!-- Current Cart Name -->
+        <Label Grid.Row="1" 
+               Text="{Binding CurrentCartName}" 
+               FontSize="20" 
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               Margin="0,10,0,0"/>
+
         <!-- Cart Items -->
-        <CollectionView Grid.Row="0" 
+        <CollectionView Grid.Row="1" 
                         ItemsSource="{Binding Cart}"
-                        SelectionMode="Single">
+                        SelectionMode="Single"
+                        Margin="0,40,0,0">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:CartItem">
                     <Grid Padding="10">
@@ -50,40 +124,49 @@
                                 HorizontalOptions="End"/>
 
                         <Button Grid.Column="2"
-                            Text="Remove"
-                            Command="{Binding BindingContext.RemoveFromCartCommand,
-                                  Source={RelativeSource AncestorType={x:Type ContentPage}}}"
-                            CommandParameter="{Binding .}"
-                            BackgroundColor="Red"
-                            TextColor="White" />
+                                Text="×"
+                                FontSize="14"
+                                Padding="5"
+                                HeightRequest="30"
+                                WidthRequest="30"
+                                BackgroundColor="Red"
+                                TextColor="White"
+                                Clicked="OnRemoveFromCartClicked"
+                                CommandParameter="{Binding .}" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="Your cart is empty" FontSize="18" TextColor="Gray"/>
+                    <Label Text="Add some items from the shop" FontSize="14" TextColor="Gray"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
         </CollectionView>
 
         <!-- Cart Summary -->
-        <VerticalStackLayout Grid.Row="1" Padding="10">
-            <Label Text="{Binding Cart, StringFormat='Subtotal: ${0:F2}', Converter={StaticResource CartSubtotalConverter}}"
+        <VerticalStackLayout Grid.Row="2" Padding="10" BackgroundColor="#f0f0f0">
+            <Label Text="{Binding CartSubtotal, StringFormat='Subtotal: ${0:F2}'}"
                    FontAttributes="Bold"/>
-            <Label Text="{Binding Cart, StringFormat='Tax (7%): ${0:F2}', Converter={StaticResource CartTaxConverter}}"/>
-            <Label Text="{Binding Cart, StringFormat='Total: ${0:F2}', Converter={StaticResource CartTotalConverter}}"
+            <Label Text="{Binding CartTax, StringFormat='Tax (7%): ${0:F2}'}"/>
+            <Label Text="{Binding CartTotal, StringFormat='Total: ${0:F2}'}"
                    FontAttributes="Bold"
                    FontSize="Large"/>
         </VerticalStackLayout>
 
         <!-- Action Buttons -->
-        <HorizontalStackLayout Grid.Row="2" 
+        <HorizontalStackLayout Grid.Row="3" 
                               HorizontalOptions="Center" 
                               Spacing="10"
                               Padding="0,10">
             <Button Text="Checkout" 
                     Command="{Binding CheckoutCommand}"
                     WidthRequest="120"
-                    BackgroundColor="red"
+                    BackgroundColor="ForestGreen"
                     TextColor="White"/>
 
-            <Button Text="Back to Inventory" 
-                    Command="{Binding GoToInventoryCommand}"
+            <Button Text="Back to Shop" 
+                    Command="{Binding GoToMainCommand}"
                     WidthRequest="120"/>
         </HorizontalStackLayout>
     </Grid>
