@@ -126,14 +126,25 @@ public sealed class ShopViewModel : INotifyPropertyChanged
             // Decrease the stock quantity by the purchased quantity
             item.Product.StockQuantity -= item.Quantity;
             
-            // Optionally update the product in the Products collection to reflect the change
+            // Find and update the product in the Products collection to reflect the change
             var productInList = Products.FirstOrDefault(p => p.Id == item.Product.Id);
             if (productInList != null)
             {
-                productInList.StockQuantity = item.Product.StockQuantity;
+                // Update on the UI thread to ensure proper notifications
+                MainThread.BeginInvokeOnMainThread(() => {
+                    productInList.StockQuantity = item.Product.StockQuantity;
+                    
+                    // Remove and re-add the product to force UI refresh if needed
+                    int index = Products.IndexOf(productInList);
+                    if (index >= 0)
+                    {
+                        Products.RemoveAt(index);
+                        Products.Insert(index, productInList);
+                    }
+                });
             }
             
-            // Update the product in the service (if needed)
+            // Update the product in the service
             _ = _productService.UpdateProductAsync(item.Product);
         }
 
@@ -149,6 +160,17 @@ public sealed class ShopViewModel : INotifyPropertyChanged
         
         // Update status to indicate stock quantities have been updated
         ButtonPressStatus = "Checkout complete. Stock updated!";
+        
+        // Force UI refresh to show updated stock quantities
+        MainThread.BeginInvokeOnMainThread(() => {
+            // Trigger collection changed notification
+            var temp = Products.ToList();
+            Products.Clear();
+            foreach (var p in temp)
+            {
+                Products.Add(p);
+            }
+        });
         
         // Reset the button press status after a delay
         MainThread.BeginInvokeOnMainThread(async () => {
