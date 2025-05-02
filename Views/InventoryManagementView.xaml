@@ -44,7 +44,7 @@
                CornerRadius="8"
                BorderColor="Gray"
                IsVisible="{Binding SelectedProduct, Converter={StaticResource IsNotNullConverter}}"
-               BackgroundColor="#f5f5f5">
+               BackgroundColor="#121212">
                
             <Grid ColumnDefinitions="*, Auto">
                 <VerticalStackLayout Grid.Column="0" Spacing="5">
@@ -65,17 +65,10 @@
                            FontAttributes="Bold"
                            HorizontalOptions="End"/>
                            
-                    <Button Text="Test Button"
-                            Clicked="OnTestButtonClicked"
-                            HorizontalOptions="End"
-                            BackgroundColor="#6C757D"
-                            TextColor="White"
-                            Margin="0,0,0,5"/>
-                            
                     <Button Text="Edit Product"
                             Clicked="OnEditProductClicked"
                             HorizontalOptions="End"
-                            BackgroundColor="#0078D7"
+                            BackgroundColor="#0056B3"
                             TextColor="White"/>
                 </VerticalStackLayout>
             </Grid>
@@ -84,7 +77,7 @@
         <!-- Product Input Section (only visible when editing) -->
         <Frame Grid.Row="2" 
               Padding="10" 
-              BackgroundColor="#e6f7ff"
+              BackgroundColor="#202020"
               BorderColor="#0078D7"
               HasShadow="True"
               Margin="10"
@@ -133,14 +126,7 @@
                     <Button Text="Done Editing" 
                             Clicked="OnDoneEditingClicked"
                             Margin="10,10,0,0"
-                            BackgroundColor="#28A745"
-                            TextColor="White"
-                            HorizontalOptions="End"/>
-                            
-                    <Button Text="Test Done" 
-                            Clicked="OnTestDoneClicked"
-                            Margin="10,10,0,0"
-                            BackgroundColor="#6C757D"
+                            BackgroundColor="#1E7E34"
                             TextColor="White"
                             HorizontalOptions="End"/>
                 </VerticalStackLayout>
@@ -184,13 +170,15 @@
                               Padding="0,10">
             <Button Text="Add Product" 
                     Command="{Binding AddProductCommand}"
-                    WidthRequest="140"/>
+                    WidthRequest="140"
+                    BackgroundColor="#0056B3"
+                    TextColor="White"/>
 
             <Button Text="Delete Product" 
                     Command="{Binding DeleteProductCommand}"
                     IsEnabled="{Binding SelectedProduct, Converter={StaticResource IsNotNullConverter}}"
                     WidthRequest="140"
-                    BackgroundColor="#DC3545"
+                    BackgroundColor="#BD2130"
                     TextColor="White"/>
         </HorizontalStackLayout>
     </Grid>
