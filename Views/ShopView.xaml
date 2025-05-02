@@ -117,6 +117,32 @@
                        FontSize="18"
                        TextColor="Black"/>
 
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,5">
+                    <Label Grid.Column="0"
+                           Text="Sort Cart By:"
+                           VerticalOptions="Center"
+                           FontSize="14"/>
+                           
+                    <Button Grid.Column="2"
+                            Text="Name"
+                            Command="{Binding SortCartByNameCommand}"
+                            Margin="5,0"
+                            Padding="8,2"
+                            FontSize="12"
+                            BackgroundColor="#0056B3"
+                            TextColor="White"
+                            HeightRequest="30"/>
+                            
+                    <Button Grid.Column="3"
+                            Text="Price"
+                            Command="{Binding SortCartByPriceCommand}"
+                            Padding="8,2"
+                            FontSize="12"
+                            BackgroundColor="#0056B3"
+                            TextColor="White"
+                            HeightRequest="30"/>
+                </Grid>
+
                 <Label Text="{Binding ButtonPressStatus, Mode=OneWay}"
                        FontSize="16" 
                        TextColor="Red" 

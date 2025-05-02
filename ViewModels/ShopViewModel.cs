@@ -9,6 +9,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Amazon.ViewModels;
 
@@ -46,13 +47,19 @@ public sealed class ShopViewModel : INotifyPropertyChanged
             {
                 _sortOrder = value;
                 OnPropertyChanged();
-                SortProducts();
+                SortProducts(_sortOrder);
             }
         }
     }
     
     public ICommand SortByNameCommand { get; }
     public ICommand SortByPriceCommand { get; }
+
+    // Cart sorting functionality - simplified approach
+    private string _cartSortOrder = "Default";
+    
+    public ICommand SortCartByNameCommand { get; }
+    public ICommand SortCartByPriceCommand { get; }
 
     // ─── commands (one instance each, all MAUI Command) ───────────────────────
     public ICommand AddToCartCommand { get; }
@@ -69,9 +76,13 @@ public sealed class ShopViewModel : INotifyPropertyChanged
         // Simplified - call AddToCart directly
         AddToCartCommand = new Command<Product?>(AddToCart, p => p != null);
         
-        // Add sort commands
-        SortByNameCommand = new Command(() => SortOrder = "Name");
-        SortByPriceCommand = new Command(() => SortOrder = "Price");
+        // Add sort commands for products
+        SortByNameCommand = new Command(() => SortProducts("Name"));
+        SortByPriceCommand = new Command(() => SortProducts("Price"));
+        
+        // Add simple sort commands for cart items
+        SortCartByNameCommand = new Command(() => SortCartItems("Name"));
+        SortCartByPriceCommand = new Command(() => SortCartItems("Price"));
         
         CheckoutCommand = new Command(Checkout, () => _cart.Any());
         GoToMainCommand = new Command(async () => await GoToMainAsync());
@@ -398,11 +409,11 @@ public sealed class ShopViewModel : INotifyPropertyChanged
         });
     }
 
-    private void SortProducts()
+    private void SortProducts(string sortOrder)
     {
         if (Products == null || Products.Count == 0) return;
         
-        var sorted = _sortOrder switch
+        var sorted = sortOrder switch
         {
             "Name" => Products.OrderBy(p => p.Name).ToList(),
             "Price" => Products.OrderBy(p => p.Price).ToList(),
@@ -414,6 +425,31 @@ public sealed class ShopViewModel : INotifyPropertyChanged
         foreach (var product in sorted)
         {
             Products.Add(product);
+        }
+    }
+
+    // Simple method to sort cart items
+    private void SortCartItems(string sortOrder)
+    {
+        if (_cart == null || _cart.Count == 0) return;
+        
+        _cartSortOrder = sortOrder;
+        
+        // Create a sorted temporary list
+        var sorted = _cartSortOrder switch
+        {
+            "Name" => _cart.OrderBy(item => item.Product.Name).ToList(),
+            "Price" => _cart.OrderBy(item => item.Product.Price).ToList(),
+            _ => _cart.ToList() // Default
+        };
+        
+        // Clear and rebuild the cart collection
+        var tempCart = new List<Amazon.Models.CartItem>(sorted);
+        _cart.Clear();
+        
+        foreach (var item in tempCart)
+        {
+            _cart.Add(item);
         }
     }
 }
