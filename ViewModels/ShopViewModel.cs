@@ -497,10 +497,17 @@ public sealed class ShopViewModel : INotifyPropertyChanged
     {
         if (_currentCart == null) return "No cart selected";
         
+        // Get the configured tax rate (as a percentage for display)
+        decimal taxRate = Preferences.ContainsKey("TaxRate") 
+            ? (decimal)Preferences.Get("TaxRate", 0.07) 
+            : 0.07m;
+        
+        string taxRateDisplay = $"{taxRate * 100:F1}%";
+        
         return $"Receipt for {_currentCart.Name}\n\n{string.Join('\n', _currentCart.Items.Select(i =>
             $"{i.Product.Name} x{i.Quantity} @ ${i.Product.Price:F2} = ${i.Subtotal:F2}"))}\n\n" +
         $"Subtotal: ${CartSubtotal:F2}\n" +
-        $"Tax (7%): ${CartTax:F2}\n" +
+        $"Tax ({taxRateDisplay}): ${CartTax:F2}\n" +
         $"Total:    ${CartTotal:F2}";
     }
 

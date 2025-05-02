@@ -51,7 +51,7 @@ namespace Amazon.ViewModels
             LoadTaxRate();
             
             SaveCommand = new Command(Save);
-            GoBackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
+            GoBackCommand = new Command(GoBack);
         }
         
         private void Save()
@@ -71,6 +71,20 @@ namespace Amazon.ViewModels
             {
                 _taxRate = (decimal)Preferences.Get("TaxRate", 0.07);
                 TaxRatePercentage = $"{_taxRate * 100:F1}%";
+            }
+        }
+        
+        private async void GoBack()
+        {
+            try
+            {
+                // Navigate to the main page
+                await Shell.Current.GoToAsync("//MainPage");
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
             }
         }
         

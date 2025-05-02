@@ -42,6 +42,18 @@
                 FontSize="20"
                 WidthRequest="300"
                 HeightRequest="75"/>
+                
+            <Button
+                x:Name="ConfigButton"
+                Text="Tax Configuration"
+                SemanticProperties.Hint="Navigate to tax configuration"
+                Clicked="OnConfigClicked"
+                HorizontalOptions="Center"
+                BackgroundColor="#9932CC"
+                TextColor="White"
+                FontSize="20"
+                WidthRequest="300"
+                HeightRequest="75"/>
 
         </VerticalStackLayout>
     </Grid>

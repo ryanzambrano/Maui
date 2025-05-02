@@ -26,5 +26,11 @@ namespace Amazon
             Debug.WriteLine("[MainPage] OnShopClicked.");
             await Shell.Current.GoToAsync("//ShopView");
         }
+        
+        private async void OnConfigClicked(object sender, EventArgs e)
+        {
+            Debug.WriteLine("[MainPage] OnConfigClicked.");
+            await Shell.Current.GoToAsync("//ConfigView");
+        }
     }
 }
