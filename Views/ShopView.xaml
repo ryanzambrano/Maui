@@ -6,6 +6,7 @@
              xmlns:converters="clr-namespace:Amazon.Converters"
              x:Class="Amazon.Views.ShopView"
              x:DataType="viewmodels:ShopViewModel"
+             x:Name="ShopPage"
              Title="Shop"
              NavigationPage.HasBackButton="True">
 
@@ -51,10 +52,10 @@
 
                         <Button Grid.Column="1"
                                 Text="Add to Cart"
-                                Command="{Binding BindingContext.AddToCartCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                                Command="{Binding Source={x:Reference ShopPage}, Path=BindingContext.AddToCartCommand}"
                                 CommandParameter="{Binding .}"
                                 IsEnabled="{Binding StockQuantity, Converter={StaticResource GreaterThanZeroConverter}}"
-                                BackgroundColor="ForestGreen"
+                                BackgroundColor="blue"
                                 TextColor="White"
                                 VerticalOptions="Center"/>
                     </Grid>
@@ -73,6 +74,11 @@
                        FontAttributes="Bold" 
                        FontSize="18"
                        TextColor="Black"/>
+
+                <Label Text="{Binding ButtonPressStatus}"
+                FontSize="14" 
+                TextColor="Red" 
+                Margin="0,0,0,5"/>  
                 
                 <Frame BackgroundColor="White" 
                        Padding="10"

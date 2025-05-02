@@ -1,49 +1,38 @@
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
-namespace Amazon.Models
+namespace Amazon.Models;
+
+public sealed class CartItem : INotifyPropertyChanged
 {
-    public class CartItem : INotifyPropertyChanged
+    public required Product Product { get; init; }      // C# 11 'required' keeps CS8618 quiet
+
+    private int _quantity = 1;
+    public int Quantity
     {
-        private Product _product;
-        private int _quantity;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public required Product Product
+        get => _quantity;
+        set
         {
-            get => _product;
-            set
-            {
-                if (_product != value)
-                {
-                    _product = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(Subtotal));
-                }
-            }
-        }
-
-        public int Quantity
-        {
-            get => _quantity;
-            set
-            {
-                if (_quantity != value)
-                {
-                    _quantity = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(Subtotal));
-                }
-            }
-        }
-
-        public decimal Subtotal => Product.Price * Quantity;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            if (value == _quantity) return;
+            _quantity = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(Subtotal));
         }
     }
-} 
+
+    public decimal Subtotal => Product.Price * Quantity;
+
+    private PropertyChangedEventHandler? _propertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged
+    {
+        add { _propertyChanged += value; }
+        remove { _propertyChanged -= value; }
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? n = null)
+    {
+        Debug.WriteLine($"[CartItem ID:{Product?.Id}] OnPropertyChanged called for: {n}");
+        _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+    }
+}

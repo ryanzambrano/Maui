@@ -3,11 +3,11 @@ using Amazon.ViewModels;
 namespace Amazon.Views
 {
     public partial class ShoppingCartView : ContentPage
+{
+    public ShoppingCartView(InventoryManagementVM vm)
     {
-        public ShoppingCartView()
-        {
-            InitializeComponent();
-            BindingContext = new InventoryManagementVM();
-        }
+        InitializeComponent();
+        BindingContext = vm;
     }
+}
 } 

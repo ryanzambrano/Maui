@@ -50,12 +50,12 @@
                                 HorizontalOptions="End"/>
 
                         <Button Grid.Column="2"
-                                Text="Remove"
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:InventoryManagementVM}}, Path=RemoveFromCartCommand}"
-                                CommandParameter="{Binding .}"
-                                BackgroundColor="Red"
-                                TextColor="White"
-                                Margin="10,0,0,0"/>
+                            Text="Remove"
+                            Command="{Binding BindingContext.RemoveFromCartCommand,
+                                  Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                            CommandParameter="{Binding .}"
+                            BackgroundColor="Red"
+                            TextColor="White" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
@@ -79,7 +79,7 @@
             <Button Text="Checkout" 
                     Command="{Binding CheckoutCommand}"
                     WidthRequest="120"
-                    BackgroundColor="Green"
+                    BackgroundColor="red"
                     TextColor="White"/>
 
             <Button Text="Back to Inventory" 
