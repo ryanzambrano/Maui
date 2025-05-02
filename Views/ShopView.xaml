@@ -111,18 +111,20 @@
                                            Margin="5,0"
                                            TextColor="Black"/>
                                     <Button Grid.Column="3"
-                                            Text="−"
-                                            FontSize="18"
-                                            FontAttributes="Bold"
-                                            Padding="5,0"
-                                            WidthRequest="40"
-                                            HeightRequest="35"
-                                            BackgroundColor="Red"
-                                            TextColor="White"
-                                            HorizontalOptions="End"
-                                            VerticalOptions="Center"
-                                            Clicked="OnRemoveCartItemClicked"
-                                            CommandParameter="{Binding .}"/>
+                                           Text="×"
+                                           FontSize="14"
+                                           Margin="0"
+                                           Padding="0"
+                                           MinimumHeightRequest="25"
+                                           MinimumWidthRequest="25"
+                                           HeightRequest="25"
+                                           WidthRequest="25"
+                                           BackgroundColor="#BD2130"
+                                           TextColor="White"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"
+                                           Clicked="OnRemoveCartItemClicked"
+                                           CommandParameter="{Binding .}"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
