@@ -12,6 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -31,41 +32,123 @@
                 <Style x:Key="EntryStyle" TargetType="Entry">
                     <Setter Property="Margin" Value="10,5"/>
                 </Style>
+                <converters:IsNotNullConverter x:Key="IsNotNullConverter"/>
+                <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
             </ResourceDictionary>
         </Grid.Resources>
 
-        <!-- Product Input Section -->
-        <Grid Grid.Row="1" Padding="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- Selected Product Display Section (visible when product selected but not editing) -->
+        <Frame Grid.Row="1" 
+               Padding="15" 
+               Margin="10"
+               CornerRadius="8"
+               BorderColor="Gray"
+               IsVisible="{Binding SelectedProduct, Converter={StaticResource IsNotNullConverter}}"
+               BackgroundColor="#f5f5f5">
+               
+            <Grid ColumnDefinitions="*, Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="5">
+                    <Label Text="{Binding SelectedProduct.Name}"
+                           FontSize="20"
+                           FontAttributes="Bold"/>
+                    <Label Text="{Binding SelectedProduct.Description}"
+                           FontSize="16"/>
+                    <Label Text="{Binding SelectedProduct.StockQuantity, StringFormat='In Stock: {0}'}"
+                           FontSize="14"
+                           TextColor="Gray"/>
+                </VerticalStackLayout>
+                
+                <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                    <Label Text="{Binding SelectedProduct.Price, StringFormat='${0:F2}'}"
+                           FontSize="22"
+                           TextColor="ForestGreen"
+                           FontAttributes="Bold"
+                           HorizontalOptions="End"/>
+                           
+                    <Button Text="Test Button"
+                            Clicked="OnTestButtonClicked"
+                            HorizontalOptions="End"
+                            BackgroundColor="#6C757D"
+                            TextColor="White"
+                            Margin="0,0,0,5"/>
+                            
+                    <Button Text="Edit Product"
+                            Clicked="OnEditProductClicked"
+                            HorizontalOptions="End"
+                            BackgroundColor="#0078D7"
+                            TextColor="White"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Frame>
 
-            <VerticalStackLayout Grid.Column="0">
-                <Entry Placeholder="Product Name" 
-                       Text="{Binding SelectedProduct.Name}"
-                       Style="{StaticResource EntryStyle}"/>
-
-                <Entry Placeholder="Description" 
-                       Text="{Binding SelectedProduct.Description}"
-                       Style="{StaticResource EntryStyle}"/>
-            </VerticalStackLayout>
-
-            <VerticalStackLayout Grid.Column="1">
-                <Entry Placeholder="Price" 
-                       Keyboard="Numeric"
-                       Text="{Binding SelectedProduct.Price}"
-                       Style="{StaticResource EntryStyle}"/>
-
-                <Entry Placeholder="Stock Quantity" 
-                       Keyboard="Numeric"
-                       Text="{Binding SelectedProduct.StockQuantity}"
-                       Style="{StaticResource EntryStyle}"/>
-            </VerticalStackLayout>
-        </Grid>
+        <!-- Product Input Section (only visible when editing) -->
+        <Frame Grid.Row="2" 
+              Padding="10" 
+              BackgroundColor="#e6f7ff"
+              BorderColor="#0078D7"
+              HasShadow="True"
+              Margin="10"
+              IsVisible="{Binding IsEditing}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+    
+                <Label Text="Edit Product Details" 
+                       Grid.Row="0"
+                       Grid.ColumnSpan="2"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="#0078D7"
+                       HorizontalOptions="Center"
+                       Margin="0,0,0,10"/>
+    
+                <VerticalStackLayout Grid.Row="1" Grid.Column="0">
+                    <Entry Placeholder="Product Name" 
+                           Text="{Binding SelectedProduct.Name}"
+                           Style="{StaticResource EntryStyle}"/>
+    
+                    <Entry Placeholder="Description" 
+                           Text="{Binding SelectedProduct.Description}"
+                           Style="{StaticResource EntryStyle}"/>
+                </VerticalStackLayout>
+    
+                <VerticalStackLayout Grid.Row="1" Grid.Column="1">
+                    <Entry Placeholder="Price" 
+                           Keyboard="Numeric"
+                           Text="{Binding SelectedProduct.Price}"
+                           Style="{StaticResource EntryStyle}"/>
+    
+                    <Entry Placeholder="Stock Quantity" 
+                           Keyboard="Numeric"
+                           Text="{Binding SelectedProduct.StockQuantity}"
+                           Style="{StaticResource EntryStyle}"/>
+                           
+                    <Button Text="Done Editing" 
+                            Clicked="OnDoneEditingClicked"
+                            Margin="10,10,0,0"
+                            BackgroundColor="#28A745"
+                            TextColor="White"
+                            HorizontalOptions="End"/>
+                            
+                    <Button Text="Test Done" 
+                            Clicked="OnTestDoneClicked"
+                            Margin="10,10,0,0"
+                            BackgroundColor="#6C757D"
+                            TextColor="White"
+                            HorizontalOptions="End"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Frame>
 
         <!-- Product List -->
-        <CollectionView Grid.Row="2" 
+        <CollectionView Grid.Row="3" 
                         ItemsSource="{Binding Products}"
                         SelectionMode="Single"
                         SelectedItem="{Binding SelectedProduct}">
@@ -95,7 +178,7 @@
         </CollectionView>
 
         <!-- Action Buttons -->
-        <HorizontalStackLayout Grid.Row="3" 
+        <HorizontalStackLayout Grid.Row="4" 
                               HorizontalOptions="Center" 
                               Spacing="10"
                               Padding="0,10">
@@ -103,14 +186,11 @@
                     Command="{Binding AddProductCommand}"
                     WidthRequest="140"/>
 
-            <Button Text="Update Product" 
-                    Command="{Binding UpdateProductCommand}"
-                    WidthRequest="140"/>
-
             <Button Text="Delete Product" 
                     Command="{Binding DeleteProductCommand}"
+                    IsEnabled="{Binding SelectedProduct, Converter={StaticResource IsNotNullConverter}}"
                     WidthRequest="140"
-                    BackgroundColor="Red"
+                    BackgroundColor="#DC3545"
                     TextColor="White"/>
         </HorizontalStackLayout>
     </Grid>

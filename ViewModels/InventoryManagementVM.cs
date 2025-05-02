@@ -19,6 +19,24 @@ namespace Amazon.ViewModels
         private ObservableCollection<Product> _products;
         private ObservableCollection<CartItem> _cart;
         private readonly ProductServiceProxy _productService;
+        private bool _isEditing = false;
+
+        // ─── commands (all set in constructor) ─────────────────────────────────────
+        private Command _startEditingCommand;
+        private Command _finishEditingCommand;
+        
+        public ICommand StartEditingCommand => _startEditingCommand;
+        public ICommand FinishEditingCommand => _finishEditingCommand;
+        
+        public ICommand AddProductCommand => new Command(AddProduct);
+        public ICommand UpdateProductCommand => new Command(UpdateProduct);
+        public ICommand DeleteProductCommand => new Command(DeleteProduct);
+        public ICommand GoToMainCommand => new Command(GoToMain);
+        public ICommand GoToShopCommand => new Command(GoToShop);
+        public ICommand AddToCartCommand => new Command<Product?>(AddToCart);
+        public ICommand RemoveFromCartCommand => new Command<CartItem?>(RemoveFromCart);
+        public ICommand CheckoutCommand => new Command(Checkout);
+        public ICommand GoToInventoryCommand => new Command(GoToInventory);
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -27,6 +45,11 @@ namespace Amazon.ViewModels
             _products = new ObservableCollection<Product>();
             _cart = new ObservableCollection<CartItem>();
             _productService = new ProductServiceProxy();
+            
+            // Initialize commands
+            _startEditingCommand = new Command(StartEditing, () => SelectedProduct != null && !IsEditing);
+            _finishEditingCommand = new Command(FinishEditing, () => IsEditing);
+            
             LoadProducts();
         }
 
@@ -57,18 +80,37 @@ namespace Amazon.ViewModels
             {
                 _selectedProduct = value;
                 OnPropertyChanged();
+                
+                // When selection changes, exit edit mode
+                if (value != null)
+                {
+                    IsEditing = false;
+                }
             }
         }
-
-        public ICommand AddProductCommand => new Command(AddProduct);
-        public ICommand UpdateProductCommand => new Command(UpdateProduct);
-        public ICommand DeleteProductCommand => new Command(DeleteProduct);
-        public ICommand GoToMainCommand => new Command(GoToMain);
-        public ICommand GoToShopCommand => new Command(GoToShop);
-        public ICommand AddToCartCommand => new Command<Product?>(AddToCart);
-        public ICommand RemoveFromCartCommand => new Command<CartItem?>(RemoveFromCart);
-        public ICommand CheckoutCommand => new Command(Checkout);
-        public ICommand GoToInventoryCommand => new Command(GoToInventory);
+        
+        public bool IsEditing
+        {
+            get
+            {
+                System.Diagnostics.Debug.WriteLine($"IsEditing getter: {_isEditing}");
+                return _isEditing;
+            }
+            set
+            {
+                System.Diagnostics.Debug.WriteLine($"IsEditing setter: changing from {_isEditing} to {value}");
+                if (_isEditing != value)
+                {
+                    _isEditing = value;
+                    System.Diagnostics.Debug.WriteLine($"IsEditing changed to {_isEditing}");
+                    OnPropertyChanged();
+                    
+                    // Update command states when editing mode changes
+                    (_startEditingCommand as Command)?.ChangeCanExecute();
+                    (_finishEditingCommand as Command)?.ChangeCanExecute();
+                }
+            }
+        }
 
         private async void LoadProducts()
         {
@@ -169,64 +211,64 @@ namespace Amazon.ViewModels
         {
             await Shell.Current.GoToAsync("//InventoryManagementView");
         }
+        
+        private void StartEditing()
+        {
+            // Make sure this method is actually being called
+            System.Diagnostics.Debug.WriteLine($"StartEditing called - SelectedProduct: {SelectedProduct?.Name}");
+            
+            // Directly set the field to ensure it changes
+            _isEditing = true;
+            OnPropertyChanged(nameof(IsEditing));
+            
+            // Update command states when editing mode changes
+            (_startEditingCommand as Command)?.ChangeCanExecute();
+            (_finishEditingCommand as Command)?.ChangeCanExecute();
+            
+            // Confirm editing mode changed
+            System.Diagnostics.Debug.WriteLine($"IsEditing set to: {IsEditing}");
+        }
+
+        private void FinishEditing()
+        {
+            System.Diagnostics.Debug.WriteLine("FinishEditing called");
+            
+            if (SelectedProduct != null)
+            {
+                // Save the changes
+                _productService.UpdateProduct(SelectedProduct);
+            }
+            
+            // Directly set the field to ensure it changes
+            _isEditing = false;
+            OnPropertyChanged(nameof(IsEditing));
+            
+            // Update command states
+            (_startEditingCommand as Command)?.ChangeCanExecute();
+            (_finishEditingCommand as Command)?.ChangeCanExecute();
+            
+            System.Diagnostics.Debug.WriteLine($"IsEditing set to: {IsEditing}");
+        }
+
+        // Public method to allow code-behind to update product
+        public void UpdateSelectedProduct()
+        {
+            if (SelectedProduct != null)
+            {
+                _productService.UpdateProduct(SelectedProduct);
+                System.Diagnostics.Debug.WriteLine($"Updated product: {SelectedProduct.Name}");
+            }
+        }
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-        // Simple Command implementation for MAUI
-        public class Command : ICommand
-        {
-            private readonly Action _execute;
-            private readonly Func<bool>? _canExecute;
-
-            public Command(Action execute, Func<bool>? canExecute = null)
-            {
-                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-                _canExecute = canExecute;
-            }
-
-            public event EventHandler? CanExecuteChanged;
-
-            public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
-
-            public void Execute(object? parameter) => _execute();
-
-            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        public class Command<T> : ICommand
-        {
-            private readonly Action<T?> _execute;
-            private readonly Func<T?, bool>? _canExecute;
-
-            public Command(Action<T?> execute, Func<T?, bool>? canExecute = null)
-            {
-                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-                _canExecute = canExecute;
-            }
-
-            public event EventHandler? CanExecuteChanged;
-
-            public bool CanExecute(object? parameter) => 
-                parameter is T t ? _canExecute?.Invoke(t) ?? true : true;
-
-            public void Execute(object? parameter)
-            {
-                if (parameter is T t)
-                {
-                    _execute(t);
-                }
-            }
-
-            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
     }
 
     public class CartItem
     {
-        public Product Product { get; set; }
+        public Product Product { get; set; } = null!;
         public int Quantity { get; set; }
         public decimal Subtotal => Product.Price * Quantity;
         public decimal Tax => Subtotal * 0.07m;
