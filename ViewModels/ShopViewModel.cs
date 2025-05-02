@@ -8,6 +8,7 @@ using Amazon.Services;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
+using System.Linq;
 
 namespace Amazon.ViewModels;
 
@@ -34,6 +35,25 @@ public sealed class ShopViewModel : INotifyPropertyChanged
         } 
     }
 
+    // Sorting functionality
+    private string _sortOrder = "Default";
+    public string SortOrder
+    {
+        get => _sortOrder;
+        set
+        {
+            if (_sortOrder != value)
+            {
+                _sortOrder = value;
+                OnPropertyChanged();
+                SortProducts();
+            }
+        }
+    }
+    
+    public ICommand SortByNameCommand { get; }
+    public ICommand SortByPriceCommand { get; }
+
     // ─── commands (one instance each, all MAUI Command) ───────────────────────
     public ICommand AddToCartCommand { get; }
     public ICommand CheckoutCommand { get; }
@@ -48,6 +68,10 @@ public sealed class ShopViewModel : INotifyPropertyChanged
 
         // Simplified - call AddToCart directly
         AddToCartCommand = new Command<Product?>(AddToCart, p => p != null);
+        
+        // Add sort commands
+        SortByNameCommand = new Command(() => SortOrder = "Name");
+        SortByPriceCommand = new Command(() => SortOrder = "Price");
         
         CheckoutCommand = new Command(Checkout, () => _cart.Any());
         GoToMainCommand = new Command(async () => await GoToMainAsync());
@@ -186,7 +210,13 @@ public sealed class ShopViewModel : INotifyPropertyChanged
     private void RaiseTotals()
     {
         CartSubtotal = _cart.Sum(i => i.Subtotal);
-        CartTax = CartSubtotal * 0.07m;
+        
+        // Get the configured tax rate (default to 7% if not configured)
+        decimal taxRate = Preferences.ContainsKey("TaxRate") 
+            ? (decimal)Preferences.Get("TaxRate", 0.07) 
+            : 0.07m;
+            
+        CartTax = CartSubtotal * taxRate;
         CartTotal = CartSubtotal + CartTax;
 
         OnPropertyChanged(nameof(CartSubtotal));
@@ -330,6 +360,60 @@ public sealed class ShopViewModel : INotifyPropertyChanged
                 await Task.Delay(2000);
                 ButtonPressStatus = "button not pressed";
             });
+        }
+    }
+
+    // Method to add multiple items to cart at once
+    public void AddMultipleToCart(Product product, int quantity)
+    {
+        if (product == null || product.StockQuantity <= 0 || quantity <= 0)
+        {
+            return;
+        }
+
+        // Limit quantity to available stock
+        quantity = Math.Min(quantity, product.StockQuantity);
+        
+        var item = _cart.FirstOrDefault(ci => ci.Product.Id == product.Id);
+        if (item is null)
+        {
+            item = new Amazon.Models.CartItem { Product = product, Quantity = quantity };
+            item.PropertyChanged += CartItem_PropertyChanged;
+            _cart.Add(item);
+        }
+        else
+        {
+            // Update quantity (limited by stock)
+            int newQuantity = Math.Min(item.Quantity + quantity, product.StockQuantity);
+            item.Quantity = newQuantity;
+        }
+
+        RaiseTotals();
+        
+        // Update status to confirm items added
+        MainThread.BeginInvokeOnMainThread(async () => {
+            ButtonPressStatus = $"Added {quantity} {product.Name} to cart";
+            await Task.Delay(2000);
+            ButtonPressStatus = "button not pressed";
+        });
+    }
+
+    private void SortProducts()
+    {
+        if (Products == null || Products.Count == 0) return;
+        
+        var sorted = _sortOrder switch
+        {
+            "Name" => Products.OrderBy(p => p.Name).ToList(),
+            "Price" => Products.OrderBy(p => p.Price).ToList(),
+            _ => Products.ToList() // Default or unknown sort order
+        };
+        
+        // Update collection
+        Products.Clear();
+        foreach (var product in sorted)
+        {
+            Products.Add(product);
         }
     }
 }

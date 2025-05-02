@@ -96,5 +96,32 @@ namespace Amazon.Views
                 }
             }
         }
+        
+        private void OnAddMultipleToCartClicked(object sender, EventArgs e)
+        {
+            // Find the button that was clicked
+            var button = sender as Button;
+            
+            // Find the parent grid
+            if (button?.Parent is HorizontalStackLayout stack && 
+                stack.Children.FirstOrDefault(c => c is Entry) is Entry quantityEntry && 
+                button.CommandParameter is Product product)
+            {
+                // Try to parse the quantity
+                if (int.TryParse(quantityEntry.Text, out int quantity) && quantity > 0)
+                {
+                    if (BindingContext is ShopViewModel vm)
+                    {
+                        // Add multiple items to cart
+                        vm.AddMultipleToCart(product, quantity);
+                    }
+                }
+                else
+                {
+                    // Show error if the quantity is invalid
+                    DisplayAlert("Invalid Quantity", "Please enter a valid quantity greater than 0.", "OK");
+                }
+            }
+        }
     }
 } 

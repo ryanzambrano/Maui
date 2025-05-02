@@ -20,23 +20,38 @@
             </ResourceDictionary>
         </Grid.Resources>
 
-        <!-- Back Button -->
-        <Button Grid.Row="0"
-                Text="Back"
-                Command="{Binding GoToMainCommand}"
-                HorizontalOptions="Start"
-                Margin="10"
-                BackgroundColor="Gray"
-                TextColor="White"/>
-                
-        <!-- Test Button - Highly Visible -->
-        <Button Grid.Row="0"
-                Text="TEST BUTTON"
-                BackgroundColor="Red"
-                TextColor="White"
-                HorizontalOptions="End"
-                Margin="10"
-                Clicked="OnTestButtonClicked"/>
+        <!-- Back Button and Sort Controls -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto">
+            <Button Grid.Column="0"
+                    Text="Back"
+                    Command="{Binding GoToMainCommand}"
+                    HorizontalOptions="Start"
+                    Margin="10"
+                    BackgroundColor="Gray"
+                    TextColor="White"/>
+            
+            <Label Grid.Column="1"
+                   Text="Sort By:"
+                   VerticalOptions="Center"
+                   HorizontalOptions="End"
+                   Margin="0,0,5,0"/>
+                   
+            <Button Grid.Column="2"
+                    Text="Name"
+                    Command="{Binding SortByNameCommand}"
+                    Margin="5,10"
+                    Padding="10,5"
+                    BackgroundColor="#0056B3"
+                    TextColor="White"/>
+                    
+            <Button Grid.Column="3"
+                    Text="Price"
+                    Command="{Binding SortByPriceCommand}"
+                    Margin="5,10,10,10"
+                    Padding="10,5"
+                    BackgroundColor="#0056B3"
+                    TextColor="White"/>
+        </Grid>
 
         <!-- Product List -->
         <CollectionView Grid.Row="1"
@@ -59,14 +74,32 @@
                                    TextColor="Gray"/>
                         </VerticalStackLayout>
 
-                        <Button Grid.Column="1"
-                                Text="Add to Cart"
-                                Clicked="OnAddToCartClicked"
-                                CommandParameter="{Binding .}"
-                                IsEnabled="{Binding StockQuantity, Converter={StaticResource GreaterThanZeroConverter}}"
-                                BackgroundColor="blue"
-                                TextColor="White"
-                                VerticalOptions="Center"/>
+                        <Grid Grid.Column="1" RowDefinitions="Auto,Auto" VerticalOptions="Center">
+                            <HorizontalStackLayout Grid.Row="0" Spacing="5" Margin="0,0,0,5">
+                                <Entry x:Name="QuantityEntry"
+                                       Placeholder="Qty"
+                                       Text="1"
+                                       Keyboard="Numeric"
+                                       WidthRequest="50"
+                                       MaxLength="3"/>
+                                <Button Text="+"
+                                        BackgroundColor="#0056B3"
+                                        TextColor="White"
+                                        WidthRequest="40"
+                                        HeightRequest="40"
+                                        Clicked="OnAddMultipleToCartClicked"
+                                        CommandParameter="{Binding .}"/>
+                            </HorizontalStackLayout>
+                            
+                            <Button Grid.Row="1"
+                                    Text="Add to Cart"
+                                    Clicked="OnAddToCartClicked"
+                                    CommandParameter="{Binding .}"
+                                    IsEnabled="{Binding StockQuantity, Converter={StaticResource GreaterThanZeroConverter}}"
+                                    BackgroundColor="blue"
+                                    TextColor="White"
+                                    VerticalOptions="Center"/>
+                        </Grid>
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

@@ -36,4 +36,27 @@ namespace Amazon.Converters
             return false;
         }
     }
+
+    public class TaxRateConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is decimal taxRate)
+            {
+                // Convert tax rate (0.07 for 7%) to slider value (7)
+                return (double)(taxRate * 100);
+            }
+            return 0.0;
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is double sliderValue)
+            {
+                // Convert slider value (7) to tax rate (0.07 for 7%)
+                return (decimal)(sliderValue / 100);
+            }
+            return 0.07m; // Default to 7%
+        }
+    }
 } 

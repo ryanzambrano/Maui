@@ -38,6 +38,25 @@ namespace Amazon.ViewModels
         public ICommand CheckoutCommand => new Command(Checkout);
         public ICommand GoToInventoryCommand => new Command(GoToInventory);
 
+        // Sorting functionality
+        private string _sortOrder = "Default";
+        public string SortOrder
+        {
+            get => _sortOrder;
+            set
+            {
+                if (_sortOrder != value)
+                {
+                    _sortOrder = value;
+                    OnPropertyChanged();
+                    SortProducts();
+                }
+            }
+        }
+        
+        public ICommand SortByNameCommand { get; }
+        public ICommand SortByPriceCommand { get; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public InventoryManagementVM()
@@ -49,6 +68,10 @@ namespace Amazon.ViewModels
             // Initialize commands
             _startEditingCommand = new Command(StartEditing, () => SelectedProduct != null && !IsEditing);
             _finishEditingCommand = new Command(FinishEditing, () => IsEditing);
+            
+            // Add sort commands
+            SortByNameCommand = new Command(() => SortOrder = "Name");
+            SortByPriceCommand = new Command(() => SortOrder = "Price");
             
             LoadProducts();
         }
@@ -257,6 +280,25 @@ namespace Amazon.ViewModels
             {
                 _productService.UpdateProduct(SelectedProduct);
                 System.Diagnostics.Debug.WriteLine($"Updated product: {SelectedProduct.Name}");
+            }
+        }
+
+        private void SortProducts()
+        {
+            if (Products == null || Products.Count == 0) return;
+            
+            var sorted = _sortOrder switch
+            {
+                "Name" => Products.OrderBy(p => p.Name).ToList(),
+                "Price" => Products.OrderBy(p => p.Price).ToList(),
+                _ => Products.ToList() // Default or unknown sort order
+            };
+            
+            // Update collection
+            Products.Clear();
+            foreach (var product in sorted)
+            {
+                Products.Add(product);
             }
         }
 

@@ -26,10 +26,12 @@ namespace Amazon
             // Register ViewModels
             builder.Services.AddSingleton<ShopViewModel>();
             builder.Services.AddSingleton<InventoryManagementVM>();
+            builder.Services.AddSingleton<ConfigViewModel>();
 
             // Register Views
             builder.Services.AddTransient<ShopView>();
             builder.Services.AddTransient<InventoryManagementView>();
+            builder.Services.AddTransient<ConfigView>();
 
 #if DEBUG
     		builder.Logging.AddDebug();

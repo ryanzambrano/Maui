@@ -27,4 +27,9 @@
         ContentTemplate="{DataTemplate views:ShoppingCartView}"
         Route="ShoppingCartView" />
 
+    <ShellContent
+        Title="Configuration"
+        ContentTemplate="{DataTemplate views:ConfigView}"
+        Route="ConfigView" />
+
 </Shell>
