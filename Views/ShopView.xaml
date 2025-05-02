@@ -17,6 +17,7 @@
                 <converters:CartTaxConverter x:Key="CartTaxConverter"/>
                 <converters:CartTotalConverter x:Key="CartTotalConverter"/>
                 <converters:GreaterThanZeroConverter x:Key="GreaterThanZeroConverter"/>
+                <converters:IsNotMainCartConverter x:Key="IsNotMainCartConverter"/>
             </ResourceDictionary>
         </Grid.Resources>
 
@@ -53,67 +54,7 @@
                     TextColor="White"/>
         </Grid>
 
-        <!-- Cart/Wishlist Tabs -->
-        <Grid Grid.Row="1" Padding="5,2" BackgroundColor="#e8e8e8" HeightRequest="40">
-            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                <HorizontalStackLayout Spacing="5" x:Name="CartTabsContainer">
-                    <!-- Dynamic tabs for carts/wishlists - Simplified without converters -->
-                    <CollectionView ItemsSource="{Binding ShoppingCarts}" 
-                                  HorizontalOptions="Start"
-                                  SelectionMode="None"
-                                  HeightRequest="30">
-                        <CollectionView.ItemsLayout>
-                            <LinearItemsLayout Orientation="Horizontal" ItemSpacing="5"/>
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="viewmodels:ShoppingCart">
-                                <Border StrokeShape="RoundRectangle 5,5,5,5" 
-                                        Padding="8,0"
-                                        BackgroundColor="#0056B3"
-                                        HeightRequest="30"
-                                        VerticalOptions="Center">
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer 
-                                            CommandParameter="{Binding .}"
-                                            Tapped="OnCartTabTapped"/>
-                                    </Border.GestureRecognizers>
-                                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
-                                        <Label Grid.Column="0" 
-                                              Text="{Binding Name}" 
-                                              TextColor="White" 
-                                              FontSize="12"
-                                              VerticalOptions="Center"/>
-                                        <Button Grid.Column="1" 
-                                               Text="×" 
-                                               FontSize="10" 
-                                               WidthRequest="18" 
-                                               HeightRequest="18"
-                                               Padding="0"
-                                               Margin="3,0,0,0"
-                                               BackgroundColor="#dc3545"
-                                               TextColor="White"
-                                               CommandParameter="{Binding .}"
-                                               Clicked="OnDeleteCartClicked"/>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                    
-                    <!-- Add new cart/wishlist button -->
-                    <Button Text="+"
-                            WidthRequest="30"
-                            HeightRequest="30"
-                            Padding="0"
-                            Margin="5,0,0,0"
-                            BackgroundColor="#28a745"
-                            TextColor="White"
-                            CornerRadius="15"
-                            VerticalOptions="Center"
-                            Clicked="OnAddNewCartClicked"/>
-                </HorizontalStackLayout>
-            </ScrollView>
-        </Grid>
+        
 
         <!-- Product List -->
         <CollectionView Grid.Row="2"
@@ -167,22 +108,86 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
+        <!-- Cart/Wishlist Tabs -->
+        <Grid Grid.Row="1" Padding="5,2" BackgroundColor="#202020" HeightRequest="40">
+            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="5" x:Name="CartTabsContainer">
+                    <!-- Dynamic tabs for carts/wishlists - Simplified without converters -->
+                    <CollectionView ItemsSource="{Binding ShoppingCarts}" 
+                                  HorizontalOptions="Start"
+                                  SelectionMode="None"
+                                  HeightRequest="30">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Horizontal" ItemSpacing="5"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:ShoppingCart">
+                                <Border StrokeShape="RoundRectangle 5,5,5,5" 
+                                        Padding="8,0"
+                                        BackgroundColor="#0056B3"
+                                        HeightRequest="30"
+                                        VerticalOptions="Center">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                            CommandParameter="{Binding .}"
+                                            Tapped="OnCartTabTapped"/>
+                                    </Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                                        <Label Grid.Column="0" 
+                                              Text="{Binding Name}" 
+                                              TextColor="White" 
+                                              FontSize="12"
+                                              VerticalOptions="Center"/>
+                                        <Button Grid.Column="1" 
+                                               Text="×" 
+                                               FontSize="10" 
+                                               WidthRequest="7" 
+                                               HeightRequest="7"
+                                               Padding="0"
+                                               Margin="3,0,0,0"
+                                               BackgroundColor="#dc3545"
+                                               TextColor="White"
+                                               CommandParameter="{Binding .}"
+                                               IsVisible="{Binding Name, Converter={StaticResource IsNotMainCartConverter}}"
+                                               Clicked="OnDeleteCartClicked"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    
+                    <!-- Add new cart/wishlist button -->
+                    <Button Text="Add New List +"
+                            WidthRequest="90"
+                            HeightRequest="30"
+                            Padding="0"
+                            Margin="5,0,0,0"
+                            BackgroundColor="#28a745"
+                            TextColor="White"
+                            CornerRadius="15"
+                            VerticalOptions="Center"
+                            Clicked="OnAddNewCartClicked"/>
+                </HorizontalStackLayout>
+            </ScrollView>
+        </Grid>
+
         <!-- Cart Summary -->
         <Grid Grid.Row="3" 
               Padding="20"
               ColumnDefinitions="*, Auto"
-              BackgroundColor="#F5F5F5">
+              BackgroundColor="#202020">
             
             <VerticalStackLayout Grid.Column="0" Spacing="5">
                 <Label Text="{Binding CurrentCartName}" 
                        FontAttributes="Bold" 
-                       FontSize="18"
-                       TextColor="Black"/>
+                       FontSize="19"
+                       TextColor="White"/>
 
                 <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,5">
                     <Label Grid.Column="0"
                            Text="Sort Cart By:"
                            VerticalOptions="Center"
+                           TextColor="White"
                            FontSize="14"/>
                            
                     <Button Grid.Column="2"
@@ -205,13 +210,9 @@
                             HeightRequest="30"/>
                 </Grid>
 
-                <Label Text="{Binding ButtonPressStatus, Mode=OneWay}"
-                       FontSize="16" 
-                       TextColor="Red" 
-                       FontAttributes="Bold"
-                       Margin="0,5,0,5"/>  
+            
                 
-                <Frame BackgroundColor="White" 
+                <Frame BackgroundColor="#121212" 
                        Padding="10"
                        CornerRadius="10"
                        HeightRequest="150">
@@ -221,16 +222,16 @@
                                 <Grid ColumnDefinitions="*, Auto, Auto, Auto">
                                     <Label Text="{Binding Product.Name}" 
                                            FontAttributes="Bold"
-                                           TextColor="Black"/>
+                                           TextColor="White"/>
                                     <Label Grid.Column="1" 
                                            Text="{Binding Quantity, StringFormat='x{0}'}"
                                            Margin="10,0"
-                                           TextColor="Black"/>
+                                           TextColor="White"/>
                                     <Label Grid.Column="2" 
                                            Text="{Binding Subtotal, StringFormat='${0:F2}'}"
                                            FontAttributes="Bold"
                                            Margin="5,0"
-                                           TextColor="Black"/>
+                                           TextColor="White"/>
                                     <Button Grid.Column="3"
                                            Text="×"
                                            FontSize="14"
@@ -256,13 +257,13 @@
                 
                 <Label Text="{Binding CartSubtotal, StringFormat='Subtotal: ${0:F2}'}"
                        FontAttributes="Bold"
-                       TextColor="Black"/>
+                       TextColor="White"/>
                 <Label Text="{Binding CartTax, StringFormat='Tax (7%): ${0:F2}'}"
-                       TextColor="Black"/>
+                       TextColor="White"/>
                 <Label Text="{Binding CartTotal, StringFormat='Total: ${0:F2}'}"
                        FontAttributes="Bold"
                        FontSize="Large"
-                       TextColor="Black"/>
+                       TextColor="White"/>
             </VerticalStackLayout>
 
             <Button Grid.Column="1"

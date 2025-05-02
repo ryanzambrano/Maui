@@ -23,6 +23,7 @@
                 <converters:CartTotalConverter x:Key="CartTotalConverter"/>
                 <converters:CartTabColorConverter x:Key="CartTabColorConverter"/>
                 <converters:NotMainCartConverter x:Key="NotMainCartConverter"/>
+                <converters:IsNotMainCartConverter x:Key="IsNotMainCartConverter"/>
             </ResourceDictionary>
         </Grid.Resources>
 
@@ -66,6 +67,7 @@
                                                BackgroundColor="#dc3545"
                                                TextColor="White"
                                                CommandParameter="{Binding .}"
+                                               IsVisible="{Binding Name, Converter={StaticResource IsNotMainCartConverter}}"
                                                Clicked="OnDeleteCartClicked"/>
                                     </Grid>
                                 </Border>

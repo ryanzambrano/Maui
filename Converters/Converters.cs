@@ -95,4 +95,22 @@ namespace Amazon.Converters
             throw new NotImplementedException();
         }
     }
+
+    public class IsNotMainCartConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is string cartName)
+            {
+                // Return true if this is NOT the main cart (so delete button is visible)
+                return cartName != "Shopping Cart";
+            }
+            return true; // Default to visible
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 } 

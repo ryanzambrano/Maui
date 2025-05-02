@@ -197,38 +197,61 @@ public sealed class ShopViewModel : INotifyPropertyChanged
     // Delete the current cart
     public void DeleteCurrentCart()
     {
-        if (_currentCart != null && _shoppingCarts.Count > 1)
+        try
         {
-            // Capture the current cart in a local variable to avoid potential null reference
-            var cartToDelete = _currentCart;
+            // Don't allow deletion of the main "Shopping Cart"
+            if (_currentCart?.Name == "Shopping Cart")
+            {
+                MainThread.BeginInvokeOnMainThread(() => {
+                    ButtonPressStatus = "Cannot delete the main Shopping Cart";
+                    
+                    // Reset the message after a delay
+                    Task.Run(async () => {
+                        await Task.Delay(2000);
+                        ButtonPressStatus = "button not pressed";
+                    });
+                });
+                return;
+            }
             
-            MainThread.BeginInvokeOnMainThread(async () => {
-                // Use Windows[0].Page instead of Application.Current?.MainPage
-                var mainPage = Application.Current?.Windows.Count > 0 ? 
-                    Application.Current.Windows[0].Page : null;
-                    
-                bool confirm = false;
-                if (mainPage != null && cartToDelete != null) // Double-check cartToDelete isn't null
-                {
-                    confirm = await mainPage.DisplayAlert(
-                        "Delete Wishlist", 
-                        $"Are you sure you want to delete \"{cartToDelete.Name}\"?",
-                        "Delete",
-                        "Cancel");
-                }
-                    
-                if (confirm && cartToDelete != null) // Check again before accessing
-                {
-                    int currentIndex = _shoppingCarts.IndexOf(cartToDelete);
-                    _shoppingCarts.Remove(cartToDelete);
-                    
-                    // Select a different cart
-                    SelectedCartIndex = Math.Min(currentIndex, _shoppingCarts.Count - 1);
-                    
-                    // Update command can execute
-                    ((Command)DeleteCurrentCartCommand).ChangeCanExecute();
-                }
-            });
+            if (_currentCart != null && _shoppingCarts.Count > 1)
+            {
+                // Capture the current cart in a local variable to avoid potential null reference
+                var cartToDelete = _currentCart;
+                
+                MainThread.BeginInvokeOnMainThread(async () => {
+                    // Use Windows[0].Page instead of Application.Current?.MainPage
+                    var mainPage = Application.Current?.Windows.Count > 0 ? 
+                        Application.Current.Windows[0].Page : null;
+                        
+                    bool confirm = false;
+                    if (mainPage != null && cartToDelete != null) // Double-check cartToDelete isn't null
+                    {
+                        confirm = await mainPage.DisplayAlert(
+                            "Delete Wishlist", 
+                            $"Are you sure you want to delete \"{cartToDelete.Name}\"?",
+                            "Delete",
+                            "Cancel");
+                    }
+                        
+                    if (confirm && cartToDelete != null) // Check again before accessing
+                    {
+                        int currentIndex = _shoppingCarts.IndexOf(cartToDelete);
+                        _shoppingCarts.Remove(cartToDelete);
+                        
+                        // Select a different cart
+                        SelectedCartIndex = Math.Min(currentIndex, _shoppingCarts.Count - 1);
+                        
+                        // Update command can execute
+                        ((Command)DeleteCurrentCartCommand).ChangeCanExecute();
+                    }
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error deleting cart: {ex.Message}");
+            ButtonPressStatus = "Error deleting cart";
         }
     }
 
@@ -392,7 +415,7 @@ public sealed class ShopViewModel : INotifyPropertyChanged
 
             var receipt = BuildReceipt();
             var page = Application.Current?.Windows[0]?.Page; 
-            _ = page?.DisplayAlert("Receipt", receipt + "\n\nStock quantities have been updated.", "OK");
+            _ = page?.DisplayAlert("Receipt", receipt, "OK");
 
             // Clear the current cart
             _currentCart.Clear();
