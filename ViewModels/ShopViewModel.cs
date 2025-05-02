@@ -283,4 +283,53 @@ public sealed class ShopViewModel : INotifyPropertyChanged
 
         RaiseTotals();
     }
+
+    // Method to remove an item from the cart
+    public void RemoveFromCart(Amazon.Models.CartItem item)
+    {
+        if (item != null)
+        {
+            // Clean up event handler
+            item.PropertyChanged -= CartItem_PropertyChanged;
+            
+            // Remove the item from the cart
+            _cart.Remove(item);
+            
+            // Update cart totals
+            RaiseTotals();
+            
+            // Update status
+            MainThread.BeginInvokeOnMainThread(async () => {
+                ButtonPressStatus = $"Removed {item.Product.Name} from cart";
+                await Task.Delay(2000);
+                ButtonPressStatus = "button not pressed";
+            });
+        }
+    }
+
+    // Method to remove a cart item by reference (without explicit type casting)
+    public void RemoveCartItemByReference(object cartItemObj)
+    {
+        // Find the cart item in our collection that matches the reference
+        var itemToRemove = _cart.FirstOrDefault(item => item == cartItemObj);
+        
+        if (itemToRemove != null)
+        {
+            // Clean up event handler
+            itemToRemove.PropertyChanged -= CartItem_PropertyChanged;
+            
+            // Remove from cart
+            _cart.Remove(itemToRemove);
+            
+            // Update cart totals
+            RaiseTotals();
+            
+            // Show feedback
+            MainThread.BeginInvokeOnMainThread(async () => {
+                ButtonPressStatus = $"Removed {itemToRemove.Product.Name} from cart";
+                await Task.Delay(2000);
+                ButtonPressStatus = "button not pressed";
+            });
+        }
+    }
 }

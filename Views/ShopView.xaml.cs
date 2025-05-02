@@ -80,5 +80,21 @@ namespace Amazon.Views
                 vm.AddToCartDirectly(product);
             }
         }
+        
+        private void OnRemoveCartItemClicked(object sender, EventArgs e)
+        {
+            if (BindingContext is ShopViewModel vm)
+            {
+                // Get the button and its CommandParameter
+                var button = sender as Button;
+                var cartItem = button?.CommandParameter;
+                
+                // Let the ViewModel handle the type conversion - it knows which CartItem to use
+                if (cartItem != null)
+                {
+                    vm.RemoveCartItemByReference(cartItem);
+                }
+            }
+        }
     }
 } 

@@ -97,7 +97,7 @@
                     <CollectionView ItemsSource="{Binding Cart}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:CartItem">
-                                <Grid ColumnDefinitions="*, Auto, Auto">
+                                <Grid ColumnDefinitions="*, Auto, Auto, Auto">
                                     <Label Text="{Binding Product.Name}" 
                                            FontAttributes="Bold"
                                            TextColor="Black"/>
@@ -108,7 +108,21 @@
                                     <Label Grid.Column="2" 
                                            Text="{Binding Subtotal, StringFormat='${0:F2}'}"
                                            FontAttributes="Bold"
+                                           Margin="5,0"
                                            TextColor="Black"/>
+                                    <Button Grid.Column="3"
+                                            Text="−"
+                                            FontSize="18"
+                                            FontAttributes="Bold"
+                                            Padding="5,0"
+                                            WidthRequest="40"
+                                            HeightRequest="35"
+                                            BackgroundColor="Red"
+                                            TextColor="White"
+                                            HorizontalOptions="End"
+                                            VerticalOptions="Center"
+                                            Clicked="OnRemoveCartItemClicked"
+                                            CommandParameter="{Binding .}"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
