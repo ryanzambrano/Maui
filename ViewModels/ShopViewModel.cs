@@ -6,6 +6,8 @@ using System.Windows.Input;
 using Amazon.Models;
 using Amazon.Services;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Graphics;
 
 namespace Amazon.ViewModels;
 
@@ -13,15 +15,29 @@ public sealed class ShopViewModel : INotifyPropertyChanged
 {
     // ─── backing storage ───────────────────────────────────────────────────────
     private readonly ObservableCollection<Amazon.Models.CartItem> _cart = new();
-    private readonly ProductServiceProxy            _productService = new();
+    private readonly ProductServiceProxy _productService = new();
+    private string _buttonPressStatus = "button not pressed";
 
-    public  ReadOnlyObservableCollection<Amazon.Models.CartItem>  Cart     { get; }
-    public  ObservableCollection<Product>           Products { get; } = new();
+    public ReadOnlyObservableCollection<Amazon.Models.CartItem> Cart { get; }
+    public ObservableCollection<Product> Products { get; } = new();
+    
+    public string ButtonPressStatus 
+    { 
+        get => _buttonPressStatus; 
+        set 
+        { 
+            if (_buttonPressStatus != value) 
+            { 
+                _buttonPressStatus = value;
+                MainThread.BeginInvokeOnMainThread(() => OnPropertyChanged(nameof(ButtonPressStatus)));
+            } 
+        } 
+    }
 
     // ─── commands (one instance each, all MAUI Command) ───────────────────────
-    public ICommand AddToCartCommand  { get; }
-    public ICommand CheckoutCommand   { get; }
-    public ICommand GoToMainCommand   { get; }
+    public ICommand AddToCartCommand { get; }
+    public ICommand CheckoutCommand { get; }
+    public ICommand GoToMainCommand { get; }
 
     // ─── constructor ──────────────────────────────────────────────────────────
     public ShopViewModel()
@@ -30,19 +46,21 @@ public sealed class ShopViewModel : INotifyPropertyChanged
 
         Cart = new ReadOnlyObservableCollection<Amazon.Models.CartItem>(_cart);
 
+        // Simplified - call AddToCart directly
         AddToCartCommand = new Command<Product?>(AddToCart, p => p != null);
-        CheckoutCommand  = new Command(Checkout, () => _cart.Any());
-        GoToMainCommand  = new Command(async () => await GoToMainAsync());
+        
+        CheckoutCommand = new Command(Checkout, () => _cart.Any());
+        GoToMainCommand = new Command(async () => await GoToMainAsync());
 
         _cart.CollectionChanged += (_, __) => RaiseTotals();
 
-        _ = LoadProductsAsync();          // fire & forget
+        _ = LoadProductsAsync(); // fire & forget
     }
 
     // ─── calculated props for binding ─────────────────────────────────────────
     public decimal CartSubtotal { get; private set; }
-    public decimal CartTax      { get; private set; }
-    public decimal CartTotal    { get; private set; }
+    public decimal CartTax { get; private set; }
+    public decimal CartTotal { get; private set; }
 
     // ─── business logic ───────────────────────────────────────────────────────
     private async Task LoadProductsAsync()
@@ -53,58 +71,54 @@ public sealed class ShopViewModel : INotifyPropertyChanged
 
     private void AddToCart(Product? product)
     {
-        _ = ShowAddToCartAlert();
+        // Get current page for visual effects
+        var page = Application.Current?.Windows[0]?.Page;
         
-        Debug.WriteLine("[ShopVM] AddToCart called.");
+        // Apply immediate visual changes to confirm function is running
+        if (page != null)
+        {
+            MainThread.BeginInvokeOnMainThread(async () => 
+            {
+                // Change page background color - very visible effect
+                page.BackgroundColor = Colors.Orange;
+                
+                // Update cart status text with product name if available
+                ButtonPressStatus = product != null 
+                    ? $"ADDING {product.Name} TO CART!" 
+                    : "UPDATING CART!";
+                
+                // Show an alert dialog
+                await page.DisplayAlert("CART UPDATED", 
+                    product != null ? $"Added {product.Name} to cart!" : "Cart updated!", 
+                    "OK");
+                
+                // Reset background color after alert is dismissed
+                page.BackgroundColor = Colors.White;
+                
+                // Reset the status message after a delay
+                await Task.Delay(3000);
+                ButtonPressStatus = "button not pressed";
+            });
+        }
+        
         if (product == null || product.StockQuantity <= 0)
         {
-            Debug.WriteLine("[ShopVM] AddToCart: Product is null or out of stock. Returning.");
             return;
         }
         
-        Debug.WriteLine($"[ShopVM] AddToCart: Adding Product ID {product.Id}");
-
         var item = _cart.FirstOrDefault(ci => ci.Product.Id == product.Id);
         if (item is null)
         {
-            Debug.WriteLine("[ShopVM] AddToCart: Creating new item");
             item = new Amazon.Models.CartItem { Product = product, Quantity = 1 };
             item.PropertyChanged += CartItem_PropertyChanged;
             _cart.Add(item);
-            Debug.WriteLine($"[ShopVM] AddToCart: New item added. Cart count: {_cart.Count}");
         }
         else if (item.Quantity < product.StockQuantity)
         {
-            Debug.WriteLine($"[ShopVM] AddToCart: Incrementing quantity for item {item.Product.Id}");
             item.Quantity++;
-            Debug.WriteLine($"[ShopVM] AddToCart: Quantity is now {item.Quantity}");
-        }
-        else
-        {
-            Debug.WriteLine("AddToCart: Quantity cannot exceed stock");
         }
 
         RaiseTotals();
-    }
-
-    private async Task ShowAddToCartAlert()
-    {
-        try 
-        {
-            var page = Application.Current?.Windows[0]?.Page; 
-            if (page != null)
-            {
-                await page.DisplayAlert("Debug", "AddToCart Called", "OK");
-            }
-            else
-            {
-                Debug.WriteLine("[ShopVM] Could not get page to display alert in AddToCart.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[ShopVM] Error showing AddToCart alert: {ex.Message}");
-        }
     }
 
     private void Checkout()
@@ -120,6 +134,9 @@ public sealed class ShopViewModel : INotifyPropertyChanged
 
         _cart.Clear();
         RaiseTotals();
+        
+        // Reset the button press status after checkout
+        ButtonPressStatus = "button not pressed";
     }
 
     private static async Task GoToMainAsync()
@@ -128,11 +145,9 @@ public sealed class ShopViewModel : INotifyPropertyChanged
     // ─── helpers ──────────────────────────────────────────────────────────────
     private void RaiseTotals()
     {
-        Debug.WriteLine("[ShopVM] RaiseTotals called.");
-        
         CartSubtotal = _cart.Sum(i => i.Subtotal);
-        CartTax      = CartSubtotal * 0.07m;
-        CartTotal    = CartSubtotal + CartTax;
+        CartTax = CartSubtotal * 0.07m;
+        CartTotal = CartSubtotal + CartTax;
 
         OnPropertyChanged(nameof(CartSubtotal));
         OnPropertyChanged(nameof(CartTax));
@@ -152,14 +167,35 @@ public sealed class ShopViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null)
     {
-        Debug.WriteLine($"[ShopVM] OnPropertyChanged called for: {name}");
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     private void CartItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        Debug.WriteLine($"[ShopVM] CartItem_PropertyChanged called by sender: {sender}, PropertyName: {e.PropertyName}");
         if (e.PropertyName is nameof(Amazon.Models.CartItem.Quantity) or nameof(Amazon.Models.CartItem.Subtotal))
             RaiseTotals();
+    }
+
+    // Add a public method that the view can call directly
+    public void AddToCartDirectly(Product product)
+    {
+        if (product == null || product.StockQuantity <= 0)
+        {
+            return;
+        }
+        
+        var item = _cart.FirstOrDefault(ci => ci.Product.Id == product.Id);
+        if (item is null)
+        {
+            item = new Amazon.Models.CartItem { Product = product, Quantity = 1 };
+            item.PropertyChanged += CartItem_PropertyChanged;
+            _cart.Add(item);
+        }
+        else if (item.Quantity < product.StockQuantity)
+        {
+            item.Quantity++;
+        }
+
+        RaiseTotals();
     }
 }

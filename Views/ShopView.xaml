@@ -28,6 +28,15 @@
                 Margin="10"
                 BackgroundColor="Gray"
                 TextColor="White"/>
+                
+        <!-- Test Button - Highly Visible -->
+        <Button Grid.Row="0"
+                Text="TEST BUTTON"
+                BackgroundColor="Red"
+                TextColor="White"
+                HorizontalOptions="End"
+                Margin="10"
+                Clicked="OnTestButtonClicked"/>
 
         <!-- Product List -->
         <CollectionView Grid.Row="1"
@@ -52,7 +61,7 @@
 
                         <Button Grid.Column="1"
                                 Text="Add to Cart"
-                                Command="{Binding Source={x:Reference ShopPage}, Path=BindingContext.AddToCartCommand}"
+                                Clicked="OnAddToCartClicked"
                                 CommandParameter="{Binding .}"
                                 IsEnabled="{Binding StockQuantity, Converter={StaticResource GreaterThanZeroConverter}}"
                                 BackgroundColor="blue"
@@ -75,10 +84,11 @@
                        FontSize="18"
                        TextColor="Black"/>
 
-                <Label Text="{Binding ButtonPressStatus}"
-                FontSize="14" 
-                TextColor="Red" 
-                Margin="0,0,0,5"/>  
+                <Label Text="{Binding ButtonPressStatus, Mode=OneWay}"
+                       FontSize="16" 
+                       TextColor="Red" 
+                       FontAttributes="Bold"
+                       Margin="0,5,0,5"/>  
                 
                 <Frame BackgroundColor="White" 
                        Padding="10"
