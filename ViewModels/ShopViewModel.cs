@@ -74,26 +74,15 @@ public sealed class ShopViewModel : INotifyPropertyChanged
         // Get current page for visual effects
         var page = Application.Current?.Windows[0]?.Page;
         
-        // Apply immediate visual changes to confirm function is running
+        // Just update the status text without visual effects
         if (page != null)
         {
             MainThread.BeginInvokeOnMainThread(async () => 
             {
-                // Change page background color - very visible effect
-                page.BackgroundColor = Colors.Orange;
-                
                 // Update cart status text with product name if available
                 ButtonPressStatus = product != null 
                     ? $"ADDING {product.Name} TO CART!" 
                     : "UPDATING CART!";
-                
-                // Show an alert dialog
-                await page.DisplayAlert("CART UPDATED", 
-                    product != null ? $"Added {product.Name} to cart!" : "Cart updated!", 
-                    "OK");
-                
-                // Reset background color after alert is dismissed
-                page.BackgroundColor = Colors.White;
                 
                 // Reset the status message after a delay
                 await Task.Delay(3000);
@@ -125,9 +114,32 @@ public sealed class ShopViewModel : INotifyPropertyChanged
     {
         if (!_cart.Any()) return;
 
+        // Update button status text
+        ButtonPressStatus = "Processing checkout...";
+
+        // Create a copy of cart items to work with
+        var cartItems = _cart.ToList();
+        
+        // Update stock quantities for each product in the cart
+        foreach (var item in cartItems)
+        {
+            // Decrease the stock quantity by the purchased quantity
+            item.Product.StockQuantity -= item.Quantity;
+            
+            // Optionally update the product in the Products collection to reflect the change
+            var productInList = Products.FirstOrDefault(p => p.Id == item.Product.Id);
+            if (productInList != null)
+            {
+                productInList.StockQuantity = item.Product.StockQuantity;
+            }
+            
+            // Update the product in the service (if needed)
+            _ = _productService.UpdateProductAsync(item.Product);
+        }
+
         var receipt = BuildReceipt();
         var page = Application.Current?.Windows[0]?.Page; 
-        _ = page?.DisplayAlert("Receipt", receipt, "OK");
+        _ = page?.DisplayAlert("Receipt", receipt + "\n\nStock quantities have been updated.", "OK");
 
         foreach (var ci in _cart)
             ci.PropertyChanged -= CartItem_PropertyChanged;
@@ -135,8 +147,14 @@ public sealed class ShopViewModel : INotifyPropertyChanged
         _cart.Clear();
         RaiseTotals();
         
-        // Reset the button press status after checkout
-        ButtonPressStatus = "button not pressed";
+        // Update status to indicate stock quantities have been updated
+        ButtonPressStatus = "Checkout complete. Stock updated!";
+        
+        // Reset the button press status after a delay
+        MainThread.BeginInvokeOnMainThread(async () => {
+            await Task.Delay(3000);
+            ButtonPressStatus = "button not pressed";
+        });
     }
 
     private static async Task GoToMainAsync()
@@ -174,6 +192,51 @@ public sealed class ShopViewModel : INotifyPropertyChanged
     {
         if (e.PropertyName is nameof(Amazon.Models.CartItem.Quantity) or nameof(Amazon.Models.CartItem.Subtotal))
             RaiseTotals();
+    }
+
+    // Improve the refresh products method to prevent duplicates
+    private bool _isRefreshing = false;
+    
+    public async Task RefreshProductsAsync()
+    {
+        // Prevent multiple concurrent refreshes
+        if (_isRefreshing) return;
+        
+        try
+        {
+            _isRefreshing = true;
+            ButtonPressStatus = "Refreshing products...";
+            
+            // Get products from service
+            var products = await _productService.GetAllProductsAsync();
+            
+            // Clear and update on main thread
+            MainThread.BeginInvokeOnMainThread(() => {
+                // Clear existing products
+                Products.Clear();
+                
+                // Add new products from service
+                foreach (var p in products)
+                {
+                    Products.Add(p);
+                }
+                
+                ButtonPressStatus = $"Products refreshed ({Products.Count})";
+            });
+            
+            // Reset the status message after a delay
+            await Task.Delay(2000);
+            ButtonPressStatus = "button not pressed";
+        }
+        catch (Exception ex)
+        {
+            ButtonPressStatus = "Error refreshing products";
+            Debug.WriteLine($"Error refreshing products: {ex.Message}");
+        }
+        finally
+        {
+            _isRefreshing = false;
+        }
     }
 
     // Add a public method that the view can call directly
